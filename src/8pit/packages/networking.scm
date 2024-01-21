@@ -4,7 +4,8 @@
   #:use-module (guix build-system gnu)
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (gnu packages bash))
+  #:use-module (gnu packages bash)
+  #:use-module (gnu packages linux))
 
 (define-public dhcpcd
   (package
@@ -19,16 +20,13 @@
         (sha256
          (base32 "07n7d5wsmy955i6l8rkcmxhgxjygj2cxgpw79id2hx9w41fbkl5l"))
         (file-name (git-file-name name version))))
+    (native-inputs (list eudev))
     (build-system gnu-build-system)
     (arguments
       (list
         #:test-target "test"
         #:configure-flags
         #~(list "--enable-ipv6"
-                "--enable-privsep"
-                "--enable-seccomp"
-                "--without-dev"
-                "--without-udev"
                 (string-append "--dbdir=" #$output "/var/db/dhcpcd")
                 (string-append "--rundir=" #$output "/var/run/dhcpcd")
                 "CC=gcc")
