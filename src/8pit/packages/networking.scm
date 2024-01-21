@@ -29,9 +29,9 @@
                 "--enable-seccomp"
                 "--without-dev"
                 "--without-udev"
+                (string-append "--dbdir=" #$output "/var/db/dhcpcd")
+                (string-append "--rundir=" #$output "/var/run/dhcpcd")
                 "CC=gcc")
-        #:make-flags
-        #~(list (string-append "DESTDIR=" #$output))
         #:phases
         #~(modify-phases %standard-phases
             (add-before 'build 'setenv
