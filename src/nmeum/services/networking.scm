@@ -125,10 +125,11 @@
 
 (define (serialize-list-of-opts field-name lst)
   #~(string-join
-      #$@(map
-           (lambda (lst)
-             (string-join (map object->string lst) " "))
-           lst) "\n"))
+      (list
+        #$@(map
+             (lambda (lst)
+               (string-join (map object->string lst) " "))
+             lst)) "\n"))
 
 (define (list-of-opts? lst)
   (list? lst))
@@ -162,16 +163,17 @@
           (home-directory "/var/empty")
           (shell "/run/current-system/profile/sbin/nologin"))))
 
-(define (dhcp-shepherd-service config)
+(define (dhcpcd-shepherd-service config)
   (let ((config-file (dhcpcd-config-file config)))
     (list (shepherd-service
             (documentation "dhcp daemon.")
             (provision '(networking))
+            (requirement '())
             (actions (list (shepherd-configuration-action config-file)))
             (start #~(make-forkexec-constructor
                        ;; TODO: Determine available interfaces?
                        (list (string-append #$dhcpcd "/sbin/dhcpcd")
-                             "-B" "-f" #$config-file ifaces)))
+                             "-B" "-f" #$config-file)))
             (stop #~(make-kill-destructor))))))
 
 (define dhcpcd-service-type
@@ -181,6 +183,6 @@
                  (list (service-extension account-service-type
                                           (const dhcpcd-account-service))
                        (service-extension shepherd-root-service-type
-                                          dhcp-shepherd-service)))
+                                          dhcpcd-shepherd-service)))
                 (compose concatenate)
                 (default-value (dhcpcd-configuration))))
