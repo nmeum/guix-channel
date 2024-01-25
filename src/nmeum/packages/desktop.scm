@@ -1,4 +1,4 @@
-(define-module (8pit packages desktop)
+(define-module (nmeum packages desktop)
   #:use-module (guix)
   #:use-module (guix gexp)
   #:use-module (guix git-download)

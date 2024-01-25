@@ -1,5 +1,5 @@
-(define-module (8pit services networking)
-  #:use-module (8pit packages networking)
+(define-module (nmeum services networking)
+  #:use-module (nmeum packages networking)
   #:use-module (guix gexp)
   #:use-module (gnu packages dns)
   #:use-module (gnu services)

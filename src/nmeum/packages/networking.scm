@@ -1,4 +1,4 @@
-(define-module (8pit packages networking)
+(define-module (nmeum packages networking)
   #:use-module (guix)
   #:use-module (guix gexp)
   #:use-module (guix build-system gnu)
