@@ -1,4 +1,5 @@
 (define-module (8pit services networking)
+  #:use-module (8pit packages networking)
   #:use-module (guix gexp)
   #:use-module (gnu packages dns)
   #:use-module (gnu services)
@@ -6,7 +7,25 @@
   #:use-module (gnu system accounts)
   #:use-module (gnu services configuration)
   #:use-module (gnu services shepherd)
-  #:use-module ((srfi srfi-1) #:select (concatenate)))
+  #:use-module ((srfi srfi-1) #:select (concatenate))
+  #:use-module ((srfi srfi-13) #:select (string-join))
+
+  #:export (unbound-service-type
+            unbound-configuration
+            unbound-configuration?
+            unbound-configuration-server
+            unbound-configuration-remote-control
+            unbound-configuration-forward-zone
+            unbound-configuration-stub-zone
+            unbound-configuration-auth-zone
+            unbound-configuration-view
+            unbound-configuration-python
+            unbound-configuration-dynlib
+
+            dhcpcd-service-type
+            dhcpcd-configuration
+            dhcpcd-configuration?
+            dhcpcd-options))
 
 ;;
 ;; Unbound
@@ -99,3 +118,69 @@
                                            unbound-shepherd-service)))
                 (compose concatenate)
                 (default-value (unbound-configuration))))
+
+;;
+;; dhcpcd
+;;
+
+(define (serialize-list-of-opts field-name lst)
+  #~(string-join
+      #$@(map
+           (lambda (lst)
+             (string-join (map object->string lst) " "))
+           lst) "\n"))
+
+(define (list-of-opts? lst)
+  (list? lst))
+
+(define-configuration dhcpcd-configuration
+  (options
+    ;; Replicate the default dhcpcd configuration file.
+    ;; See: https://github.com/NetworkConfiguration/dhcpcd#configuration
+    (list-of-opts '((hostname)
+                    (duid)
+                    (persistent)
+                    (option rapid_commit)
+                    (option interface_mtu)
+                    (require dhcp_server_identifier)
+                    (slaac private)))
+    "List of configuration options for dhcpcd."))
+
+(define (dhcpcd-config-file config)
+  (mixed-text-file "dhcpcd.conf"
+    (serialize-configuration
+      config
+      dhcpcd-configuration-fields)))
+
+(define dhcpcd-account-service
+  (list (user-group (name "dhcpcd") (system? #t))
+        (user-account
+          (name "dhcpcd")
+          (group "dhcpcd")
+          (system? #t)
+          (comment "dhcpcd daemon user")
+          (home-directory "/var/empty")
+          (shell "/run/current-system/profile/sbin/nologin"))))
+
+(define (dhcp-shepherd-service config)
+  (let ((config-file (dhcpcd-config-file config)))
+    (list (shepherd-service
+            (documentation "dhcp daemon.")
+            (provision '(networking))
+            (actions (list (shepherd-configuration-action config-file)))
+            (start #~(make-forkexec-constructor
+                       ;; TODO: Determine available interfaces?
+                       (list (string-append #$dhcpcd "/sbin/dhcpcd")
+                             "-B" "-f" #$config-file ifaces)))
+            (stop #~(make-kill-destructor))))))
+
+(define dhcpcd-service-type
+  (service-type (name 'dhcpcd)
+                (description "Run the dhcpcd daemon.")
+                (extensions
+                 (list (service-extension account-service-type
+                                          (const dhcpcd-account-service))
+                       (service-extension shepherd-root-service-type
+                                          dhcp-shepherd-service)))
+                (compose concatenate)
+                (default-value (dhcpcd-configuration))))
