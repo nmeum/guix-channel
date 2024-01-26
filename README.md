@@ -2,6 +2,19 @@
 
 A channel for the [Guix] package manager.
 
+## Usage
+
+Add the following to your `channels.scm`, refer to the [Guix manual][guix channels] for more details:
+
+	(channel
+	  (name 'nmeum)
+	  (url "https://git.8pit.net/guix-channel.git")
+	  (introduction
+	   (make-channel-introduction
+	    "808a00792c114c5c1662e8b1a51b90a2d23f313a"
+	    (openpgp-fingerprint
+	     "514E 833A 8861 1207 4F98  F68A E447 3B6A 9C05 755D"))))
+
 ## License
 
 This program is free software: you can redistribute it and/or modify it
@@ -18,3 +31,4 @@ You should have received a copy of the GNU General Public License along
 with this program. If not, see <https://www.gnu.org/licenses/>.
 
 [Guix]: https://guix.gnu.org
+[guix channels]: https://guix.gnu.org/en/manual/devel/en/guix.html#Channels
