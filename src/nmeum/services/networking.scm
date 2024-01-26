@@ -27,6 +27,13 @@
             dhcpcd-configuration?
             dhcpcd-options))
 
+;; Ensure that strings within the unbound configuration
+;; are not enclosed in double quotes by the serialization.
+(define (->string obj)
+  (if (string? obj)
+    obj
+    (object->string obj)))
+
 ;;
 ;; Unbound
 ;;
@@ -42,7 +49,7 @@
               (string-append "\t"
                              (symbol->string (car pair))
                              ": "
-                             (object->string (cdr pair))
+                             (->string (cdr pair))
                              "\n"))
             lst))))
 
@@ -128,7 +135,7 @@
       (list
         #$@(map
              (lambda (lst)
-               (string-join (map object->string lst) " "))
+               (string-join (map ->string lst) " "))
              lst)) "\n"))
 
 (define (list-of-opts? lst)
