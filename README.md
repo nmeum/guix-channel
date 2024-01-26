@@ -8,7 +8,7 @@ Add the following to your `channels.scm`, refer to the [Guix manual][guix channe
 
 	(channel
 	  (name 'nmeum)
-	  (url "https://git.8pit.net/guix-channel.git")
+	  (url "https://github.com/nmeum/guix-channel.git")
 	  (introduction
 	   (make-channel-introduction
 	    "808a00792c114c5c1662e8b1a51b90a2d23f313a"
