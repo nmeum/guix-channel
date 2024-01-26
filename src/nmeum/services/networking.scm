@@ -143,7 +143,7 @@
 
 (define-configuration dhcpcd-configuration
   (interfaces
-    list
+    (list '())
     "List of interfaces to start a DHCP client for."
     empty-serializer)
   (options
