@@ -181,7 +181,7 @@
     (list (shepherd-service
             (documentation "dhcp daemon.")
             (provision '(networking))
-            (requirement '())
+            (requirement '(user-processes udev))
             (actions (list (shepherd-configuration-action config-file)))
             (start #~(lambda _
                        ;; When invoked without any arguments, the client discovers all
