@@ -25,7 +25,8 @@
             dhcpcd-service-type
             dhcpcd-configuration
             dhcpcd-configuration?
-            dhcpcd-options))
+            dhcpcd-configuration-interfaces
+            dhcpcd-configuration-options))
 
 ;; Ensure that strings within the unbound configuration
 ;; are not enclosed in double quotes by the serialization.
