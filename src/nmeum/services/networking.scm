@@ -144,7 +144,7 @@
 
 (define-configuration dhcpcd-configuration
   (interfaces
-    (list '())
+    maybe-list
     "List of interfaces to start a DHCP client for."
     empty-serializer)
   (options
@@ -176,17 +176,38 @@
           (shell "/run/current-system/profile/sbin/nologin"))))
 
 (define (dhcpcd-shepherd-service config)
-  (let ((config-file (dhcpcd-config-file config))
-        (interfaces  (dhcpcd-configuration-interfaces config)))
+  (let* ((config-file (dhcpcd-config-file config))
+         (interfaces (dhcpcd-configuration-interfaces config)))
     (list (shepherd-service
             (documentation "dhcp daemon.")
             (provision '(networking))
             (requirement '())
             (actions (list (shepherd-configuration-action config-file)))
-            (start #~(make-forkexec-constructor
-                       ;; TODO: Determine available interfaces?
-                       (list (string-append #$dhcpcd "/sbin/dhcpcd")
-                              "-B" "-f" #$config-file #$@interfaces)))
+            (start #~(lambda _
+                       ;; When invoked without any arguments, the client discovers all
+                       ;; non-loopback interfaces *that are up*.  However, the relevant
+                       ;; interfaces are typically down at this point.  Thus we perform
+                       ;; our own interface discovery here.
+                       ;;
+                       ;; Taken from the `dhcp-client-shepherd-service`.
+                       (define valid?
+                         (lambda (interface)
+                           (and (arp-network-interface? interface)
+                                (not (loopback-network-interface? interface))
+                                ;; XXX: Make sure the interfaces are up so that
+                                ;; 'dhclient' can actually send/receive over them.
+                                ;; Ignore those that cannot be activated.
+                                (false-if-exception
+                                  (set-network-interface-up interface)))))
+                       (define ifaces
+                         (filter valid?
+                                 #$(if (maybe-value-set? interfaces)
+                                     #~'#$interfaces
+                                     #~(all-network-interface-names))))
+
+                       (fork+exec-command
+                         (cons* (string-append #$dhcpcd "/sbin/dhcpcd")
+                                "-B" "-f" #$config-file ifaces))))
             (stop #~(make-kill-destructor))))))
 
 (define dhcpcd-service-type
