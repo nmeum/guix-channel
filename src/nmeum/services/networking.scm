@@ -142,6 +142,10 @@
   (list? lst))
 
 (define-configuration dhcpcd-configuration
+  (interfaces
+    list
+    "List of interfaces to start a DHCP client for."
+    empty-serializer)
   (options
     ;; Replicate the default dhcpcd configuration file.
     ;; See: https://github.com/NetworkConfiguration/dhcpcd#configuration
@@ -171,7 +175,8 @@
           (shell "/run/current-system/profile/sbin/nologin"))))
 
 (define (dhcpcd-shepherd-service config)
-  (let ((config-file (dhcpcd-config-file config)))
+  (let ((config-file (dhcpcd-config-file config))
+        (interfaces  (dhcpcd-configuration-interfaces config)))
     (list (shepherd-service
             (documentation "dhcp daemon.")
             (provision '(networking))
@@ -180,7 +185,7 @@
             (start #~(make-forkexec-constructor
                        ;; TODO: Determine available interfaces?
                        (list (string-append #$dhcpcd "/sbin/dhcpcd")
-                             "-B" "-f" #$config-file)))
+                              "-B" "-f" #$config-file #$@interfaces)))
             (stop #~(make-kill-destructor))))))
 
 (define dhcpcd-service-type
