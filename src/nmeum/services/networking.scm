@@ -132,12 +132,13 @@
 ;;
 
 (define (serialize-list-of-opts field-name lst)
-  #~(string-join
-      (list
-        #$@(map
-             (lambda (lst)
-               (string-join (map ->string lst) " "))
-             lst)) "\n"))
+  #~(string-append
+      (string-join
+        (list
+          #$@(map
+               (lambda (lst)
+                 (string-join (map ->string lst) " "))
+               lst)) "\n") "\n"))
 
 (define (list-of-opts? lst)
   (list? lst))
