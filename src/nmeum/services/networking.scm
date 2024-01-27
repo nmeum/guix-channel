@@ -207,7 +207,7 @@
 
                        (fork+exec-command
                          (cons* (string-append #$dhcpcd "/sbin/dhcpcd")
-                                "-B" "-f" #$config-file ifaces))))
+                                "-q" "-q" "-B" "-f" #$config-file ifaces))))
             (stop #~(make-kill-destructor))))))
 
 (define dhcpcd-service-type
