@@ -32,7 +32,7 @@
                                 "--privsepuser=dhcpcd"
                                 (string-append "--dbdir=" "/var/db/dhcpcd")
                                 (string-append "--rundir=" "/var/run/dhcpcd")
-                                "CC=gcc")
+                                (string-append "CC=" #$(cc-for-target)))
       #:phases #~(modify-phases %standard-phases
                    (add-after 'unpack 'do-not-create-dbdir
                      (lambda _
@@ -43,19 +43,18 @@
                           ""))))
                    (add-before 'build 'setenv
                      (lambda _
-                       (setenv "HOST_SH"
-                               (string-append #$bash-minimal "/bin/sh"))))
+                       (setenv "HOST_SH" (which "sh"))))
                    (add-after 'install 'wrap-hooks
                      (lambda* (#:key inputs outputs #:allow-other-keys)
                        (let* ((out (assoc-ref outputs "out"))
                               (libexec (string-append out "/libexec"))
-                              (sed (assoc-ref inputs "sed"))
-                              (coreutils (assoc-ref inputs "coreutils")))
+                              (sed (search-input-file inputs "/bin/sed"))
+                              (rm (search-input-file inputs "/bin/rm")))
                          (wrap-program (string-append libexec
                                                       "/dhcpcd-run-hooks")
                            `("PATH" ":" suffix
-                             (,(string-append coreutils "/bin")
-                              ,(string-append sed "/bin"))))))))))
+                             (,(dirname sed)
+                              ,(dirname rm))))))))))
     (home-page "https://roy.marples.name/projects/dhcpcd")
     (synopsis "Feature-rich DHCP and DHCPv6 client")
     (description
@@ -64,3 +63,5 @@ dhcpcd is also an IPv4LL (aka ZeroConf) client.  In layperson's terms,
 dhcpcd runs on your machine and silently configures your computer to work
 on the attached networks without trouble and mostly without configuration.")
     (license license:bsd-2)))
+
+
