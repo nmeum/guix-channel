@@ -13,14 +13,6 @@
   #:use-module (gnu packages fontutils)
   #:use-module (gnu packages textutils))
 
-;; See https://issues.guix.gnu.org/68548
-(define fcft-utf8
-  (package
-    (inherit fcft)
-    (native-inputs
-      (modify-inputs (package-native-inputs fcft)
-                     (prepend utf8proc)))))
-
 (define-public dumb-runtime-dir
   (package
     (name "dumb-runtime-dir")
@@ -78,7 +70,7 @@ which do not set @code{XDG_RUNTIME_DIR}.")
     (native-inputs
       (list
         pixman
-        fcft-utf8
+        fcft
         pkg-config
         wayland
         wayland-protocols
