@@ -30,8 +30,7 @@
     (arguments
      (list
       #:tests? #f
-      #:make-flags #~(list "RUNTIME_DIR_PARENT=/var/run/user"
-                           (string-append "CC="
+      #:make-flags #~(list (string-append "CC="
                                           #$(cc-for-target))
                            (string-append "PREFIX=")
                            (string-append "DESTDIR="
