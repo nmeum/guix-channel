@@ -6,6 +6,7 @@
   #:use-module (guix build-system zig)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages)
+  #:use-module (gnu packages fonts)
   #:use-module (gnu packages zig)
   #:use-module (gnu packages zig-xyz)
   #:use-module (gnu packages freedesktop)
@@ -157,3 +158,16 @@ which do not set @code{XDG_RUNTIME_DIR}.")
 more mallable then the original version.  For example,
 supporting custom status bar information via stdin.")
     (license license:expat)))
+
+(define-public font-terminus-patched
+  (package
+    (inherit font-terminus)
+    (name "font-terminus-patched")
+    (arguments
+      (substitute-keyword-arguments (package-arguments font-terminus)
+        ((#:phases phases '%standard-phases)
+         #~(modify-phases #$phases
+             (add-after 'unpack 'patch-font
+               (lambda _
+                 (invoke "patch" "-p0" "-i" "alt/td1.diff")
+                 (invoke "patch" "-p0" "-i" "alt/ll2.diff")))))))))
