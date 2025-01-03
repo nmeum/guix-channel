@@ -5,7 +5,9 @@
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system zig)
   #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (gnu packages)
   #:use-module (gnu packages zig)
+  #:use-module (gnu packages zig-xyz)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages xdisorg)
@@ -98,35 +100,59 @@ which do not set @code{XDG_RUNTIME_DIR}.")
     (description "")
     (license license:expat)))
 
+(define-public zig-fcft
+  (package
+    (name "zig-fcft")
+    (version "1.1.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://git.sr.ht/~novakane/zig-fcft")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0im0rdwww7xxvhmibfp3459h8wwdmihjb9m7vmzxkgqs4x77l114"))))
+    (build-system zig-build-system)
+    (arguments
+     (list
+      #:skip-build? #t
+      #:tests? #f))
+    (propagated-inputs (list zig-pixman fcft))
+    (native-inputs (list pkg-config))
+    (synopsis "Zig bindings for the fcft font library")
+    (description "")
+    (home-page "https://git.sr.ht/~novakane/zig-fcft")
+    (license license:expat)))
+
 (define-public creek
   (package
     (name "creek")
-    (version "0.2.0")
+    (version "0.4.2")
     (source
-      (origin
-        (method git-fetch)
-        (uri (git-reference
-               (url "https://github.com/nmeum/creek")
-               (commit (string-append "v" version))
-               (recursive? #t)))
-        (file-name (git-file-name name version))
-        (sha256
-          (base32 "08v8f39wxpalifib0760nkckl1xbbxqcjcmv68348w9b8367kzx6"))))
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/nmeum/creek")
+             (commit (string-append "v" version))
+             (recursive? #t)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0b1gpxgi207cqrls6qp0pd6749g60yfcrjii8nagm00c678bs3nx"))))
     (build-system zig-build-system)
     (arguments
-      (list
-        #:zig-release-type "safe"
-        #:tests? #f))
-    (native-inputs
-      (list
-        pixman
-        fcft
-        pkg-config
-        wayland
-        wayland-protocols
-        zig))
+     (list
+      #:zig-release-type "safe"
+      #:tests? #f))
+    (native-inputs (list fcft
+                         pixman
+                         pkg-config
+                         zig-wayland
+                         zig-fcft
+                         zig-pixman))
     (home-page "https://github.com/nmeum/leeve")
-    (synopsis "A minimalistic and malleable status bar for the River compositor.")
+    (synopsis
+     "A minimalistic and malleable status bar for the River compositor.")
     (description "A fork of the creek status bar which intended to be
 more mallable then the original version.  For example,
 supporting custom status bar information via stdin.")
