@@ -33,10 +33,7 @@
     (arguments
      (list
       #:tests? #f
-      ;; TODO: Create a subdirectory in /run (e.g. /run/users) or simply
-      ;; prefix the directory created by dumb-runtime-dir with "user-".
-      #:make-flags #~(list "RUNTIME_DIR_PARENT=/run"
-                           (string-append "CC="
+      #:make-flags #~(list (string-append "CC="
                                           #$(cc-for-target))
                            (string-append "PREFIX=")
                            (string-append "DESTDIR="
