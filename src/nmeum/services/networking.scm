@@ -1,6 +1,7 @@
 (define-module (nmeum services networking)
   #:use-module (nmeum packages networking)
   #:use-module (guix gexp)
+  #:use-module (gnu packages admin)
   #:use-module (gnu packages dns)
   #:use-module (gnu services)
   #:use-module (gnu system shadow)
@@ -9,18 +10,14 @@
   #:use-module (gnu services shepherd)
   #:use-module ((srfi srfi-1) #:select (concatenate))
   #:use-module ((srfi srfi-13) #:select (string-join))
+  #:use-module ((srfi srfi-26) #:select (cut))
 
   #:export (unbound-service-type
             unbound-configuration
-            unbound-configuration?
-            unbound-configuration-server
-            unbound-configuration-remote-control
-            unbound-configuration-forward-zone
-            unbound-configuration-stub-zone
-            unbound-configuration-auth-zone
-            unbound-configuration-view
-            unbound-configuration-python
-            unbound-configuration-dynlib
+            unbound-configuration
+            unbound-server
+            unbound-zone
+            unbound-remote
 
             dhcpcd-service-type
             dhcpcd-configuration
@@ -28,65 +25,140 @@
             dhcpcd-configuration-interfaces
             dhcpcd-configuration-options))
 
-;; Ensure that strings within the unbound configuration
-;; are not enclosed in double quotes by the serialization.
-(define (->string obj)
-  (if (string? obj)
-    obj
-    (object->string obj)))
-
 ;;
 ;; Unbound
 ;;
 
-(define-maybe list)
+(define (unbound-serialize-field field-name value)
+  (let ((field (object->string field-name))
+        (value (cond
+                 ((boolean? value) (if value "yes" "no"))
+                 ((string? value) value)
+                 (else (object->string value)))))
+    (if (string=? field "extra-content")
+      #~(string-append #$value "\n")
+      #~(format #f "	~a: ~s~%" #$field #$value))))
 
-(define (serialize-list field-name lst)
-  #~(string-append
-      #$(string-append (symbol->string field-name) ":\n")
-      #$(apply string-append
-          (map
-            (lambda (pair)
-              (string-append "\t"
-                             (symbol->string (car pair))
-                             ": "
-                             (->string (cdr pair))
-                             "\n"))
-            lst))))
+(define (unbound-serialize-alist field-name value)
+  #~(string-append #$@(generic-serialize-alist list
+                                               unbound-serialize-field
+                                               value)))
+
+(define (unbound-serialize-section section-name value fields)
+  #~(format #f "~a:~%~a"
+            #$(object->string section-name)
+            #$(serialize-configuration value fields)))
+
+(define unbound-serialize-string unbound-serialize-field)
+(define unbound-serialize-boolean unbound-serialize-field)
+
+(define-maybe string (prefix unbound-))
+(define-maybe list-of-strings (prefix unbound-))
+(define-maybe boolean (prefix unbound-))
+
+(define (unbound-serialize-list-of-strings field-name value)
+  #~(string-append #$@(map (cut unbound-serialize-string field-name <>) value)))
+
+(define-configuration unbound-zone
+  (name
+    string
+    "Zone name.")
+
+  (forward-addr
+    maybe-list-of-strings
+    "IP address of server to forward to.")
+
+  (forward-tls-upstream
+    maybe-boolean
+    "Whether the queries to this forwarder use TLS for transport.")
+
+  (extra-options
+   (alist '())
+   "An association list of options to append.")
+
+  (prefix unbound-))
+
+(define (unbound-serialize-unbound-zone field-name value)
+  (unbound-serialize-section field-name value unbound-zone-fields))
+
+(define (unbound-serialize-list-of-unbound-zone field-name value)
+  #~(string-append #$@(map (cut unbound-serialize-unbound-zone field-name <>)
+                           value)))
+
+(define list-of-unbound-zone? (list-of unbound-zone?))
+
+(define-configuration unbound-remote
+  (control-enable
+    maybe-boolean
+    "Enable remote control.")
+
+  (control-interface
+    maybe-string
+    "IP address or local socket path to listen on for remote control.")
+
+  (extra-options
+   (alist '())
+   "An association list of options to append.")
+
+  (prefix unbound-))
+
+(define (unbound-serialize-unbound-remote field-name value)
+  (unbound-serialize-section field-name value unbound-remote-fields))
+
+(define-configuration unbound-server
+  (interface
+    maybe-list-of-strings
+    "Interfaces listened on for queries from clients.")
+
+  (hide-version
+    maybe-boolean
+    "Refuse the version.server and version.bind queries.")
+
+  (hide-identity
+    maybe-boolean
+    "Refuse the id.server and hostname.bind queries.")
+
+  (tls-cert-bundle
+    maybe-string
+    "Certificate bundle file, used for DNS over TLS.")
+
+  (extra-options
+   (alist '())
+   "An association list of options to append.")
+
+  (prefix unbound-))
+
+(define (unbound-serialize-unbound-server field-name value)
+  (unbound-serialize-section field-name value unbound-server-fields))
 
 (define-configuration unbound-configuration
   (server
-    (maybe-list '((interface . "127.0.0.1")
-                  (interface . "::1")
+    (unbound-server
+      (unbound-server
+        (interface '("127.0.0.1" "::1"))
 
-                  ;; TLS certificate bundle for DNS over TLS.
-                  (tls-cert-bundle . "/etc/ssl/certs/ca-certificates.crt")
+        (hide-version #t)
+        (hide-identity #t)
 
-                  (hide-identity . yes)
-                  (hide-version . yes)))
-    "The server section of the configuration.")
+        (tls-cert-bundle "/etc/ssl/certs/ca-certificates.crt")))
+    "General options for the Unbound server.")
+
   (remote-control
-    (maybe-list '((control-enable . yes)
-                  (control-interface . "/run/unbound.sock")))
-    "Configuration of the remote control facility.")
+    (unbound-remote
+      (unbound-remote
+        (control-enable #t)
+        (control-interface "/run/unbound.sock")))
+    "Remote control options for the daemon.")
+
   (forward-zone
-    maybe-list
-    "Configuration of nameservers to forward queries to.")
-  (stub-zone
-    maybe-list
-    "Configuration of stub zones.")
-  (auth-zone
-    maybe-list
-    "Zones for which unbound should response as an authority server.")
-  (view
-    maybe-list
-    "Configuration of view clauses.")
-  (python
-    maybe-list
-    "Configuration of the Python module.")
-  (dynlib
-    maybe-list
-    "Dynamic library module configuration."))
+    (list-of-unbound-zone '())
+    "A zone for which queries should be forwarded to another resolver.")
+
+  (extra-content
+    maybe-string
+    "Raw content to add to the configuration file.")
+
+  (prefix unbound-))
 
 (define (unbound-config-file config)
   (mixed-text-file "unbound.conf"
@@ -99,7 +171,7 @@
     (list (shepherd-service
             (documentation "Unbound daemon.")
             (provision '(unbound dns))
-            (requirement '(networking))
+            (requirement '(user-processes))
             (actions (list (shepherd-configuration-action config-file)))
             (start #~(make-forkexec-constructor
                        (list (string-append #$unbound "/sbin/unbound")
@@ -114,11 +186,11 @@
          (system? #t)
          (comment "Unbound daemon user")
          (home-directory "/var/empty")
-         (shell "/run/current-system/profile/sbin/nologin"))))
+         (shell (file-append shadow "/sbin/nologin")))))
 
 (define unbound-service-type
   (service-type (name 'unbound)
-                (description "Run the unbound DNS resolver.")
+                (description "Run the Unbound DNS resolver.")
                 (extensions
                   (list (service-extension account-service-type
                                            (const unbound-account-service))
@@ -130,6 +202,15 @@
 ;;
 ;; dhcpcd
 ;;
+
+(define-maybe list)
+
+;; Ensure that strings within the unbound configuration
+;; are not enclosed in double quotes by the serialization.
+(define (->string obj)
+  (if (string? obj)
+    obj
+    (object->string obj)))
 
 (define (serialize-list-of-opts field-name lst)
   #~(string-append
