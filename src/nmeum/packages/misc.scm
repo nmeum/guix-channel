@@ -67,10 +67,10 @@ string.  A \"field descriptor\" tells libxo what the field is and what it means.
     (native-inputs (list flex bison pkg-config))
     (home-page "https://github.com/chimera-linux/chimerautils")
     (synopsis "The FreeBSD-based core Linux userland from Chimera Linux")
-    (description "This is a port of the FreeBSD userland to Linux provided by
-the Chimera Linux distribution.  It provides a variety of standard tools which
-can be used as alternative to the corresponding implementation from the GNU
-project.")
+    (description "This is a port of the FreeBSD userland for Linux provided by
+the Chimera Linux distribution.  Essentially, it is a collection of UNIX tools
+such as @command{grep}, @command{cp}, @command{vi}, etc. and can be used as an
+alternative to the corresponding implementations from the GNU project.")
     (license license:bsd-2)))
 
 ;; TODO: Use package-with-extra-patches somehow, however, we need to change
