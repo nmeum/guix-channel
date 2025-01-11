@@ -40,6 +40,39 @@ calls a function @code{xo_emit} to product output that is described in a format
 string.  A \"field descriptor\" tells libxo what the field is and what it means.")
     (license license:bsd-2)))
 
+(define-public chimera-utils
+  (package
+    (name "chimerautils")
+    (version "14.2.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/chimera-linux/chimerautils")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1z23ii57r9li4ffk9fg8q5k6n74rkzvmj2v5bcwb7dgkjanmhrn5"))))
+    (build-system meson-build-system)
+    (arguments
+     (list
+      #:tests? #f))
+    (inputs (list (list zstd "lib")
+                  zlib
+                  ncurses
+                  acl
+                  libedit
+                  libxo
+                  openssl))
+    (native-inputs (list flex bison pkg-config))
+    (home-page "https://github.com/chimera-linux/chimerautils")
+    (synopsis "The FreeBSD-based core Linux userland from Chimera Linux")
+    (description "This is a port of the FreeBSD userland to Linux provided by
+the Chimera Linux distribution.  It provides a variety of standard tools which
+can be used as alternative to the corresponding implementation from the GNU
+project.")
+    (license license:bsd-2)))
+
 ;; TODO: Use package-with-extra-patches somehow, however, we need to change
 ;; the package name somehow as loksh would otherwise be ambiguous and not
 ;; sure how do that on a package returned by package-with-extra-patches.
