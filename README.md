@@ -31,4 +31,4 @@ You should have received a copy of the GNU General Public License along
 with this program. If not, see <https://www.gnu.org/licenses/>.
 
 [Guix]: https://guix.gnu.org
-[guix channels]: https://guix.gnu.org/en/manual/devel/en/guix.html#Channels
+[guix channels]: https://guix.gnu.org/manual/devel/en/guix.html#Channels
