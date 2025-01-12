@@ -99,7 +99,8 @@ PostScript, and PDF.  Additional tools include the @command{man} viewer, and
     (native-inputs (list autoconf automake libtool))
     (home-page "http://juniper.github.io/libxo/libxo-manual.html")
     (synopsis "Library for Generating Text, XML, JSON, and HTML Output")
-    (description "This library allows an application to generate text, XML,
+    (description
+     "This library allows an application to generate text, XML,
 JSON, and HTML output using a common set of function calls.  The application
 decides at run time which output style should be produced.  The application
 calls a function @code{xo_emit} to product output that is described in a format
@@ -117,6 +118,11 @@ string.  A \"field descriptor\" tells libxo what the field is and what it means.
              (url "https://github.com/chimera-linux/chimerautils")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
+       (patches (map (lambda (patch)
+                       (search-path (map (cut string-append <>
+                                              "/nmeum/packages/patches")
+                                         %load-path) patch))
+                     '("chimerautils-find-getopt-fix.patch")))
        (sha256
         (base32 "1z23ii57r9li4ffk9fg8q5k6n74rkzvmj2v5bcwb7dgkjanmhrn5"))))
     (build-system meson-build-system)
@@ -133,7 +139,8 @@ string.  A \"field descriptor\" tells libxo what the field is and what it means.
     (native-inputs (list flex bison pkg-config))
     (home-page "https://github.com/chimera-linux/chimerautils")
     (synopsis "The FreeBSD-based core Linux userland from Chimera Linux")
-    (description "This is a port of the FreeBSD userland for Linux provided by
+    (description
+     "This is a port of the FreeBSD userland for Linux provided by
 the Chimera Linux distribution.  Essentially, it is a collection of UNIX tools
 such as @command{grep}, @command{cp}, @command{vi}, etc. and can be used as an
 alternative to the corresponding implementations from the GNU project.")
