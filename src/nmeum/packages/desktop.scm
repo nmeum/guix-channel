@@ -51,53 +51,6 @@ is useful in conjuction with simple seat managers like @code{seatd}
 which do not set @code{XDG_RUNTIME_DIR}.")
     (license license:bsd-0)))
 
-(define-public mkrundir
-  (package
-    (name "mkrundir")
-    (version "1.0.0")
-    (source
-     (origin
-       (method url-fetch)
-       (uri
-        "https://raw.githubusercontent.com/nmeum/aports/20c6e66bcb4a23236b96bbd9b360f7dd7b8fdaf7/8pit/mkrundir/mkrundir.c")
-       (sha256
-        (base32 "1zmqns6grn9awjwn1f2qmv9v7agk2ly2xbr9i6av48g8rkwgmid7"))))
-    (build-system gnu-build-system)
-    (arguments
-     (list
-      #:tests? #f
-      #:phases #~(modify-phases %standard-phases
-                   (delete 'configure)
-                   (delete 'unpack)
-                   (replace 'build
-                     (lambda _
-                       (let ((gcc (assoc-ref %build-inputs "gcc")))
-                         (invoke (string-append gcc "/bin/gcc")
-                                 "-O2"
-                                 "-Wall"
-                                 "-Wextra"
-                                 "-Wpedantic"
-                                 "-Werror"
-                                 "-fstack-clash-protection"
-                                 "-fstack-protector-strong"
-                                 "-D_FORTIFY_SOURCE=2"
-                                 "-DRUNTIME_DIR_PREFIX=\"/run/user-\""
-                                 "-o"
-                                 "mkrundir"
-                                 #$source))))
-                   (replace 'install
-                     (lambda _
-                       (let* ((out (assoc-ref %outputs "out"))
-                              (bin (string-append out "/bin"))
-                              (exec (string-append bin "/mkrundir")))
-                         (mkdir-p bin)
-                         (copy-file "mkrundir" exec)
-                         (chmod exec #o4755)))))))
-    (home-page "https://github.com/nmeum/aports/tree/master/8pit/mkrundir")
-    (synopsis "A simple SUID binary for creating an XDG_RUNTIME_DIR")
-    (description "")
-    (license license:expat)))
-
 (define-public zig-fcft
   (package
     (name "zig-fcft")
