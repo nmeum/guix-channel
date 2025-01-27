@@ -1,5 +1,4 @@
 (define-module (nmeum services networking)
-  #:use-module (nmeum packages networking)
   #:use-module (guix gexp)
   #:use-module (gnu packages admin)
   #:use-module (gnu packages dns)
