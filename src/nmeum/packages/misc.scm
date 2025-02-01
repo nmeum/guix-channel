@@ -7,80 +7,14 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages acl)
   #:use-module (gnu packages autotools)
-  #:use-module (gnu packages base)
   #:use-module (gnu packages bison)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages flex)
   #:use-module (gnu packages libedit)
   #:use-module (gnu packages ncurses)
-  #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages shells)
   #:use-module (gnu packages tls))
-
-(define-public mandoc-zstd
-  (package
-    (name "mandoc-zstd")
-    (version "1.14.6")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://mandoc.bsd.lv/snapshots/mandoc-"
-                                  version ".tar.gz"))
-              (patches (map (lambda (patch)
-                              (search-path (map (cut string-append <>
-                                                     "/nmeum/packages/patches")
-                                                %load-path) patch))
-                            '("mandoc-support-zstd-compression.patch")))
-              (sha256
-               (base32
-                "174x2x9ws47b14lm339j6rzm7mxy1j3qhh484khscw0yy1qdbw4b"))))
-    (build-system gnu-build-system)
-    (arguments
-     `(#:test-target "regress"
-       #:make-flags
-       (list "VPATH=./zstd-src/zlibWrapper"
-             (string-join
-               (list "CFLAGS=-DZWRAP_USE_ZSTD=1"
-                     (string-append "-I./zstd-src/zlibWrapper"))
-               " "))
-       #:phases ,#~(modify-phases %standard-phases
-                     (add-after 'unpack 'unpack-zstd
-                       (lambda _
-                         (mkdir "zstd-src")
-                         (invoke "tar" "--strip-components=1" "-C" "zstd-src"
-                                 "-xf" #$(package-source zstd))))
-                     (add-before 'configure 'set-prefix
-                       (lambda* (#:key outputs #:allow-other-keys)
-                         (substitute* "configure"
-                           (("^CC=.*")
-                            (string-append "CC=" #$(cc-for-target) "\n"))
-                           (("^DEFCFLAGS=\\\\\"")
-                            "DEFCFLAGS=\"-O2 ")
-                           (("^UTF8_LOCALE=.*")      ;used for tests
-                            "UTF8_LOCALE=en_US.UTF-8\n")
-                           (("^MANPATH_(BASE|DEFAULT)=.*" _ which)
-                            (string-append "MANPATH_" which "="
-                                           "/run/current-system/profile/share/man\n"))
-                           (("^PREFIX=.*")
-                            (string-append "PREFIX=" (assoc-ref outputs "out")
-                                           "\n"))))))))
-    (native-inputs (list (libc-utf8-locales-for-target) perl)) ;used to run tests
-    (inputs (list zlib (list zstd "lib")))
-    (native-search-paths
-     (list (search-path-specification
-            (variable "MANPATH")
-            (files '("share/man")))))
-    (synopsis "Tools for BSD mdoc and man pages")
-    (description
-     "mandoc is a suite of tools compiling mdoc, the roff macro language of
-choice for BSD manual pages, and man, the predominant historical language for
-UNIX manuals.  It is small and quite fast.  The main component of the toolset
-is the @command{mandoc} utility program, based on the libmandoc validating
-compiler, to format output for UTF-8 and ASCII UNIX terminals, HTML 5,
-PostScript, and PDF.  Additional tools include the @command{man} viewer, and
-@command{apropos} and @command{whatis}.")
-    (home-page "https://mandoc.bsd.lv/")
-    (license license:isc)))
 
 (define-public libxo
   (package
