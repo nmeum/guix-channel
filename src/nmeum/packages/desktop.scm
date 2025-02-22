@@ -146,10 +146,11 @@ supporting custom status bar information via stdin.")
     (inherit font-terminus)
     (name "font-terminus-patched")
     (arguments
-      (substitute-keyword-arguments (package-arguments font-terminus)
-        ((#:phases phases '%standard-phases)
-         #~(modify-phases #$phases
-             (add-after 'unpack 'patch-font
-               (lambda _
-                 (invoke "patch" "-p0" "-i" "alt/td1.diff")
-                 (invoke "patch" "-p0" "-i" "alt/ll2.diff")))))))))
+     (substitute-keyword-arguments (package-arguments font-terminus)
+       ((#:phases phases
+         '%standard-phases)
+        #~(modify-phases #$phases
+            (add-after 'unpack 'patch-font
+              (lambda _
+                (invoke "patch" "-p0" "-i" "alt/td1.diff")
+                (invoke "patch" "-p0" "-i" "alt/ll2.diff")))))))))
