@@ -109,6 +109,37 @@ more mallable then the original version.  For example,
 supporting custom status bar information via stdin.")
     (license license:expat)))
 
+(define-public dam
+  (let ((commit "e6eb713fb3239aad3c534502d8c0e42e4e514c8f")
+        (revision "1"))
+    (package
+      (name "dam")
+      (version (git-version "0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://codeberg.org/sewn/dam")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "0ybhyvv3n1xdy5hb1xw7l2rzy73n5vhh8r60gfbf61crhggnzh8k"))))
+      (build-system gnu-build-system)
+      (arguments
+       (list
+        #:tests? #f
+        #:make-flags #~(list (string-append "PREFIX=" #$output))
+        #:phases #~(modify-phases %standard-phases
+                     (add-before 'configure 'set-cc-command
+                       (lambda _
+                         (setenv "CC" #$(cc-for-target))))
+                     (delete 'configure))))
+      (native-inputs (list fcft pixman pkg-config wayland wayland-protocols))
+      (home-page "https://codeberg.org/sewn/dam")
+      (synopsis "A itsy-bitsy dwm-esque bar for the river compositor")
+      (description "")
+      (license license:expat))))
+
 (define-public font-terminus-patched
   (package
     (inherit font-terminus)
