@@ -6,6 +6,7 @@
   #:use-module (guix build-system zig)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages)
+  #:use-module (gnu packages audio)
   #:use-module (gnu packages fonts)
   #:use-module (gnu packages zig)
   #:use-module (gnu packages zig-xyz)
@@ -108,6 +109,45 @@ which do not set @code{XDG_RUNTIME_DIR}.")
 more mallable then the original version.  For example,
 supporting custom status bar information via stdin.")
     (license license:expat)))
+
+(define-public ustatus
+  (let ((commit "4032e2010de049472b7af57e85b7e4728fdde5e7")
+        (revision "0"))
+    (package
+      (name "ustatus")
+      (version (git-version "20190721" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/nmeum/ustatus")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "0a9pf51c2j68s7limdhw8ccqhyc1lk3q0iddfh1y65m18jh1vmn1"))))
+      (build-system gnu-build-system)
+      (arguments
+       (list
+        #:tests? #f
+        #:make-flags
+        #~(list (string-append "CC="
+                               #$(cc-for-target)))
+        #:phases
+        #~(modify-phases %standard-phases
+            (delete 'configure)
+            (replace 'install
+              (lambda* (#:key outputs #:allow-other-keys)
+                (let* ((outdir (assoc-ref outputs "out"))
+                       (bindir (string-append outdir "/bin")))
+                  (mkdir-p bindir)
+                  (copy-file "ustatus"
+                             (string-append bindir "/ustatus"))))))))
+      (inputs (list tinyalsa))
+      (native-inputs (list pkg-config))
+      (home-page "https://git.8pit.net/ustatus")
+      (synopsis "Minimal status tool for dwm-like status bars")
+      (description "")
+      (license license:wtfpl2))))
 
 (define-public dam
   (let ((commit "e6eb713fb3239aad3c534502d8c0e42e4e514c8f")
