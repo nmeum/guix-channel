@@ -3,7 +3,9 @@
   #:use-module (gnu bootloader)
   #:use-module (gnu bootloader grub)
   #:use-module (guix gexp)
-  #:use-module (guix import utils))
+  #:use-module (guix import utils)
+  #:use-module ((srfi srfi-1) #:select (break))
+  #:use-module ((srfi srfi-11) #:select (let-values)))
 
 ;; wraps an existing Grub 'bootloader-installer' in a procedure which copies
 ;; all files referenced in Grub's configuration file to the install directory.
@@ -72,3 +74,20 @@
 
       ;; Invoke the 'bootloader-installer' that we are wrapping.
       (#$installer bootloader device mount-point)))
+
+;; wraps an existing 'bootloader-configuration-file-generator' and removes
+;; any '#:store-crypto-devices' from the arguments passed to the generator.
+(define-public (configuration-file-generator-without-crypto-devices generator)
+  (define (filter-keyword keyword args)
+        (let-values (((head tail) (break
+                                    (lambda (arg)
+                                      (equal? arg keyword))
+                                    args)))
+          (if (null? tail)
+            args
+            (append head (cdr (cdr tail))))))
+
+  (lambda args
+    (apply
+      generator
+      (filter-keyword #:store-crypto-devices args))))
