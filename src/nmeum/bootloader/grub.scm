@@ -72,8 +72,3 @@
 
       ;; Invoke the 'bootloader-installer' that we are wrapping.
       (#$installer bootloader device mount-point)))
-
-(define grub-copy-bootloader
-  (bootloader
-    (inherit grub-bootloader)
-    (installer (grub-copy (bootloader-installer grub-bootloader)))))
