@@ -4,9 +4,45 @@
   #:use-module (guix build-system gnu)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages gnupg)
+  #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages shells)
+  #:use-module (gnu packages version-control)
   #:use-module (srfi srfi-26))
+
+(define-public git-shuffle
+  (let ((commit "06ac27513a275c979aa57cd8c932b90c8cb689eb")
+        (revision "1"))
+    (package
+      (name "git-shuffle")
+      (version (git-version "20251025" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://git.8pit.net/git-shuffle.git")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "1say9ap60l04i3lj4gbf0dn6zbf457cf5fdvlwdh4y7rfi8hq3m0"))))
+      (build-system gnu-build-system)
+      (arguments
+       (list
+        #:tests? #f
+        #:make-flags
+        #~(list "CFLAGS=-O2"
+                "PREFIX=/"
+                (string-append "DESTDIR=" #$output)
+                (string-append "CC=" #$(cc-for-target)))
+        #:phases
+        #~(modify-phases %standard-phases
+            (delete 'configure))))
+      (inputs (list pkg-config))
+      (native-inputs (list libgit2))
+      (home-page "https://git.8pit.net/git-shuffle")
+      (synopsis "Randomize timestamps associated with Git commits to enhance privacy")
+      (description "")
+      (license license:gpl3))))
 
 ;; TODO: Use package-with-extra-patches somehow, however, we need to change
 ;; the package name somehow as loksh would otherwise be ambiguous and not
