@@ -1,7 +1,12 @@
 (define-module (nmeum packages misc)
-  #:use-module (srfi srfi-26)
   #:use-module (guix)
-  #:use-module (gnu packages shells))
+  #:use-module (guix git-download)
+  #:use-module (guix build-system gnu)
+  #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (gnu packages gnupg)
+  #:use-module (gnu packages perl)
+  #:use-module (gnu packages shells)
+  #:use-module (srfi srfi-26))
 
 ;; TODO: Use package-with-extra-patches somehow, however, we need to change
 ;; the package name somehow as loksh would otherwise be ambiguous and not
@@ -18,3 +23,42 @@
                                               "/nmeum/packages/patches")
                                          %load-path) patch))
                      '("loksh-bracketed-paste-mode.patch")))))))
+
+(define-public tpm
+  (package
+    (name "tpm")
+    (version "1.3.3")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://git.8pit.net/tpm.git")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "109q5ag4cbrxbr2slnb3ii9zkjnim5yxfb3j34yf3r32yd6kmjlg"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:tests? #f
+      #:make-flags
+      #~(list "PREFIX=/"
+              (string-append "DESTDIR=" #$output))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'fix-paths
+            (lambda* (#:key inputs outputs #:allow-other-keys)
+              (substitute* "tpm"
+                (("gpg2")
+                 (search-input-file inputs "/bin/gpg")))))
+          (delete 'configure))))
+    (inputs (list gnupg))
+    (native-inputs (list perl))
+    (home-page "https://git.8pit.net/tpm")
+    (synopsis "Tiny password manager")
+    (description
+     "Tiny shell script which is heavily inspired and largely
+compatible with @code{pass}.  Just like pass it uses @code{gnupg} to securely
+store your passwords, the major difference between pass and tpm is that the
+latter is a lot more minimal.")
+    (license license:gpl3)))
