@@ -1,14 +1,43 @@
 (define-module (nmeum packages misc)
   #:use-module (guix)
-  #:use-module (guix git-download)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system go)
+  #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages gnupg)
-  #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages golang-xyz)
+  #:use-module (gnu packages mail)
   #:use-module (gnu packages perl)
+  #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages shells)
   #:use-module (gnu packages version-control)
   #:use-module (srfi srfi-26))
+
+(define-public mblaze-ui
+  (package
+    (name "mblaze-ui")
+    (version "0.0.0-20250423085554-54f778f3d6a8")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://git.8pit.net/mblaze-ui.git")
+             (commit (go-version->git-ref version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "104fjj7da2cp2f6g8h4y6ycs68ml8smiq11clx3dc07y191mnzf1"))))
+    (build-system go-build-system)
+    (arguments
+     (list
+      #:install-source? #f
+      #:import-path "github.com/nmeum/mblaze-ui"))
+    (propagated-inputs (list mblaze
+                             go-github-com-mattn-go-runewidth
+                             go-github-com-gdamore-tcell-v2))
+    (home-page "https://github.com/nmeum/mblaze-ui")
+    (synopsis "mblaze-ui")
+    (description "")
+    (license license:gpl3+)))
 
 (define-public git-shuffle
   (let ((commit "06ac27513a275c979aa57cd8c932b90c8cb689eb")
