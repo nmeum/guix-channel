@@ -3,19 +3,71 @@
   #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system trivial)
   #:use-module (guix build-system zig)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages)
   #:use-module (gnu packages audio)
+  #:use-module (gnu packages bash)
   #:use-module (gnu packages fonts)
+  #:use-module (gnu packages gawk)
   #:use-module (gnu packages zig)
   #:use-module (gnu packages zig-xyz)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages linux)
-  #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages fontutils)
-  #:use-module (gnu packages textutils))
+  #:use-module (gnu packages textutils)
+  #:use-module (gnu packages xdisorg))
+
+(define-public bemenu-emoji
+  (package
+    (name "bemenu-emoji")
+    (version "16.0")
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments
+      `(#:modules ((guix build utils))
+        #:builder
+        ,#~(begin
+             (use-modules (guix build utils))
+             (let* ((bindir (string-append #$output "/bin"))
+                    (script (string-append bindir "/bemenu-emoji")))
+               (mkdir-p bindir)
+               (with-output-to-file script
+                 (lambda _
+                   (format #t
+                     "#!~a
+
+emoji=$(~a -F '# ' '/fully-qualified/ { print $2 }' ~s | \\
+ ~a -F 'E[0-9][0-9]*.[0-9][0-9]* ' '/E[0-9][0-9]*\\.[0-9][0-9]*/ { print $1 $2 }' | \\
+ ~a -p emoji -l 15 \"$@\" | cut -d ' ' -f1)
+
+[ -n \"${emoji}\" ] || exit
+exec ~a \"${emoji}\""
+                     (search-input-file %build-inputs "/bin/sh")
+                     (search-input-file %build-inputs (string-append "/bin/awk"))
+                     (assoc-ref %build-inputs "unicode")
+                     (search-input-file %build-inputs (string-append "/bin/awk"))
+                     (search-input-file %build-inputs (string-append "/bin/bemenu"))
+                     (search-input-file %build-inputs (string-append "/bin/wtype")))))
+               (chmod script #o755)))))
+    (inputs
+      `(("bash-minimal" ,bash-minimal)
+        ("bemenu" ,bemenu)
+        ("gawk" ,gawk)
+        ("wtype" ,wtype)
+        ("unicode"
+         ,(origin
+            (method url-fetch)
+            (uri (format #f "https://www.unicode.org/Public/emoji/~a/emoji-test.txt" version))
+            (sha256
+              (base32
+                "15wn2f2yvk66576xs7lij8ip0gkawkqfhlv997i45wbcx0scbw14"))))))
+    (synopsis "Provides a cc(1) symlink to gcc(1)")
+    (description "")
+    (home-page "https://github.com/nmeum/aports/blob/master/8pit/bemenu-emoji")
+    (license license:public-domain)))
 
 (define-public creek
   (package
