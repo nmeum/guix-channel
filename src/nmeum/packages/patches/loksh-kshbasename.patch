@@ -1,0 +1,59 @@
+From 29df8734fdc342f5ffb626f1636e1e0b4f72c1ed Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?S=C3=B6ren=20Tempel?= <soeren+git@soeren-tempel.net>
+Date: Thu, 13 Nov 2025 08:36:29 +0100
+Subject: [PATCH] Don't print the full ksh binary name in error messages
+
+This results in much nicer to read error messages on Guix where
+argv[0] will be a lengthy GNU store path with which we don't want
+to prefix every error message.
+
+Note that for login shell's (e.g., as created by login(8) or sshd), the
+argv[0] will be `-ksh` and the error message will be readable. However,
+for non-login shell's (e.g., as created by terminal emulators) argv[0]
+will be the full binary path.
+
+---
+ io.c | 23 +++++++++++++++++++++--
+ 1 file changed, 21 insertions(+), 2 deletions(-)
+
+diff --git a/io.c b/io.c
+index 1ea1978..d9d9b3d 100644
+--- a/io.c
++++ b/io.c
+@@ -17,6 +17,22 @@
+ 
+ static int initio_done;
+ 
++/*
++ * GNU's version of basename(3) from string.h which does *not* modify it's
++ * input but returns an empty string when path has a trailing '/' or is '/'.
++ */
++static const char*
++basename_const(const char *path)
++{
++	char *sep;
++
++	if ((sep = (strrchr(path, '/')))) {
++		return sep+1;
++	} else {
++		return path;
++	}
++}
++
+ /*
+  * formatted output functions
+  */
+@@ -126,8 +142,11 @@ error_prefix(int fileline)
+ {
+ 	/* Avoid foo: foo[2]: ... */
+ 	if (!fileline || !source || !source->file ||
+-	    strcmp(source->file, kshname) != 0)
+-		shf_fprintf(shl_out, "%s: ", kshname + (*kshname == '-'));
++	    strcmp(source->file, kshname) != 0) {
++		const char *kshbasename = basename_const(kshname);
++		shf_fprintf(shl_out, "%s: ", kshbasename + (*kshbasename == '-'));
++	}
++
+ 	if (fileline && source && source->file != NULL) {
+ 		shf_fprintf(shl_out, "%s[%d]: ", source->file,
+ 		    source->errline > 0 ? source->errline : source->line);

@@ -76,7 +76,7 @@
 ;; TODO: Use package-with-extra-patches somehow, however, we need to change
 ;; the package name somehow as loksh would otherwise be ambiguous and not
 ;; sure how do that on a package returned by package-with-extra-patches.
-(define-public loksh-bracketed
+(define-public loksh-bracketed ; TODO: rename to loksh-8pit or something
   (package
     (inherit loksh)
     (name "loksh-bracketed")
@@ -87,7 +87,8 @@
                        (search-path (map (cut string-append <>
                                               "/nmeum/packages/patches")
                                          %load-path) patch))
-                     '("loksh-bracketed-paste-mode.patch")))))))
+                     '("loksh-bracketed-paste-mode.patch"
+                       "loksh-kshbasename.patch")))))))
 
 (define-public tpm
   (package
