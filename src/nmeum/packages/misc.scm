@@ -76,10 +76,10 @@
 ;; TODO: Use package-with-extra-patches somehow, however, we need to change
 ;; the package name somehow as loksh would otherwise be ambiguous and not
 ;; sure how do that on a package returned by package-with-extra-patches.
-(define-public loksh-bracketed ; TODO: rename to loksh-8pit or something
+(define-public loksh-8pit
   (package
     (inherit loksh)
-    (name "loksh-bracketed")
+    (name "loksh-8pit")
     (source
      (origin
        (inherit (package-source loksh))
