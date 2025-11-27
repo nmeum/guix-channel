@@ -1,5 +1,6 @@
 (define-module (nmeum packages misc)
   #:use-module (guix)
+  #:use-module (guix build-system copy)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system go)
   #:use-module (guix git-download)
@@ -12,6 +13,35 @@
   #:use-module (gnu packages shells)
   #:use-module (gnu packages version-control)
   #:use-module (srfi srfi-26))
+
+;; TODO: This cannot be properly used with Guix right now because
+;; gnu/system/keyboard.scm unconditionally generates the keyboard
+;; console-keymap from xkeyboard-config.
+(define-public neo-layout
+  (let ((commit "97cfdd486dcd278833b80dc396e00a1c3503e6d6")
+        (revision "1"))
+    (package
+      (name "neo-layout")
+      (version (git-version "20220410" revision commit))
+      (source
+        (origin
+          (method git-fetch)
+          (uri (git-reference
+                 (url "https://git.neo-layout.org/neo/neo-layout.git")
+                 (commit commit)))
+          (file-name (git-file-name name version))
+          (sha256
+            (base32 "0xg3n808rphn9jlpvgc4y1pz8kdjv916xshg64lkp4hakip1p45j"))))
+      (build-system copy-build-system)
+      (arguments
+        `(#:install-plan
+          '(("linux/console/neo.map" "usr/share/keymaps/legacy/i386/qwertz/neo.map"))))
+      (home-page "https://neo-layout.org")
+      (synopsis "Keyboard layout optimized for the German language")
+      (description "This provides the original handwritten version of the
+neo-layout for kbd's @code{loadkeys(1)}.  Contrary to the version generated
+from xkeyboard-config, layer 4 actually works.")
+      (license license:gpl3))))
 
 (define-public mblaze-ui
   (package
