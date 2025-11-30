@@ -151,6 +151,7 @@ latter is a lot more minimal.")
       #:import-path "github.com/aymerick/raymond"
       #:phases
       #~(modify-phases %standard-phases
+          ;; Replace vendored mustache version with the one from 'inputs'.
           (add-before 'check 'supply-mustache
             (lambda* (#:key inputs import-path #:allow-other-keys)
               (let ((mustache (string-append "src/" import-path "/mustache")))
@@ -169,12 +170,11 @@ latter is a lot more minimal.")
            (sha256
              (base32
               "1g2f6hi04vkxrk53ixzm7yvkg5v8m00dh9nrkh9lxnx8aw824y80"))))))
-    (propagated-inputs
-      (list
-        go-gopkg-in-yaml-v2))
+    (propagated-inputs (list go-gopkg-in-yaml-v2))
     (home-page "https://github.com/aymerick/raymond")
-    (synopsis "raymond")
-    (description "Package raymond provides handlebars evaluation.")
+    (synopsis "Handlebars for Go")
+    (description "Provides a minimal templating engine for Go, inspired by the
+Mustache-compatible Handlebars library from the Javascript ecosystem.")
     (license license:expat)))
 
 (define-public go-github-com-gosimple-unidecode
@@ -195,10 +195,9 @@ latter is a lot more minimal.")
      (list
       #:import-path "github.com/gosimple/unidecode"))
     (home-page "https://github.com/gosimple/unidecode")
-    (synopsis "unidecode")
-    (description
-     "Package unidecode implements a unicode transliterator which replaces non-ASCII
-characters with their ASCII approximations.")
+    (synopsis "Unicode transliterator for Go")
+    (description "Package unidecode implements a unicode transliterator which
+replaces non-ASCII characters with their ASCII approximations.")
     (license license:asl2.0)))
 
 (define-public go-github-com-gosimple-slug
@@ -340,7 +339,7 @@ format.")
     (arguments
      (list
       #:skip-build? #t
-      #:tests? #f
+      #:tests? #f ; TODO: requires packaging a lot of additional libraries.
       #:import-path "github.com/tliron/kutil"))
     (home-page "https://github.com/tliron/kutil")
     (synopsis "Kutil")
@@ -350,7 +349,7 @@ format.")
 (define-public go-github-com-petermattis-goid
   (package
     (name "go-github-com-petermattis-goid")
-    (version "0.0.0-20220526132513-07eaf5d0b9f4")
+    (version "0.0.0-20251121121749-a11dd1a45f9a")
     (source
      (origin
        (method git-fetch)
@@ -359,17 +358,14 @@ format.")
              (commit (go-version->git-ref version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1f55z20zlxyy7dn2db6fbjpcs52cnj10r6kc28lqjsas6l019swr"))))
+        (base32 "0zbagyilyrz87kinzfnkcmgsqhzq1nhacn5kjswdlr08n4wdg748"))))
     (build-system go-build-system)
     (arguments
      (list
-      #:tests? #f
       #:import-path "github.com/petermattis/goid"))
     (home-page "https://github.com/petermattis/goid")
-    (synopsis "goid")
-    (description
-     "Programatically retrieve the current goroutine's ID. See for supported Go
-versions.")
+    (synopsis "Retrieves the current goroutine's ID")
+    (description "Programatically retrieve the current goroutine's identifier.")
     (license license:asl2.0)))
 
 (define-public go-github-com-sasha-s-go-deadlock
@@ -388,7 +384,6 @@ versions.")
     (build-system go-build-system)
     (arguments
      (list
-      #:tests? #f
       #:import-path "github.com/sasha-s/go-deadlock"))
     (propagated-inputs (list go-github-com-petermattis-goid))
     (home-page "https://github.com/sasha-s/go-deadlock")
@@ -468,11 +463,15 @@ Protocol} SDK for Go.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1dk087l9c927f90zrsmyxxfx5i980r952qw47j9srq2q7dd0b4ni"))))
+        (base32 "1dk087l9c927f90zrsmyxxfx5i980r952qw47j9srq2q7dd0b4ni"))
+       (modules '((guix build utils)))
+       ;; Fix import path for itself in the example code (build by 'check).
+       (snippet '(substitute* "example/main.go"
+                   (("github.com/djherbis/times")
+                    "gopkg.in/djherbis/times.v1")))))
     (build-system go-build-system)
     (arguments
      (list
-      #:tests? #f
       #:import-path "gopkg.in/djherbis/times.v1"))
     (home-page "https://github.com/djherbis/times")
     (synopsis "File times for Go")
