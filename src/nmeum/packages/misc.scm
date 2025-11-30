@@ -10,6 +10,7 @@
   #:use-module (gnu packages golang-web)
   #:use-module (gnu packages golang-xyz)
   #:use-module (gnu packages mail)
+  #:use-module (gnu packages ncurses)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages shells)
@@ -339,11 +340,89 @@ format.")
     (arguments
      (list
       #:skip-build? #t
+      #:tests? #f
       #:import-path "github.com/tliron/kutil"))
     (home-page "https://github.com/tliron/kutil")
     (synopsis "Kutil")
     (description "This package provides a collection of Go utilities.")
     (license license:asl2.0)))
+
+(define-public go-github-com-petermattis-goid
+  (package
+    (name "go-github-com-petermattis-goid")
+    (version "0.0.0-20220526132513-07eaf5d0b9f4")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/petermattis/goid")
+             (commit (go-version->git-ref version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1f55z20zlxyy7dn2db6fbjpcs52cnj10r6kc28lqjsas6l019swr"))))
+    (build-system go-build-system)
+    (arguments
+     (list
+      #:tests? #f
+      #:import-path "github.com/petermattis/goid"))
+    (home-page "https://github.com/petermattis/goid")
+    (synopsis "goid")
+    (description
+     "Programatically retrieve the current goroutine's ID. See for supported Go
+versions.")
+    (license license:asl2.0)))
+
+(define-public go-github-com-sasha-s-go-deadlock
+  (package
+    (name "go-github-com-sasha-s-go-deadlock")
+    (version "0.3.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/sasha-s/go-deadlock")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0arb35idnyz4n118xz7p2snazqi35gk1975h1xfk0y4riiks58yz"))))
+    (build-system go-build-system)
+    (arguments
+     (list
+      #:tests? #f
+      #:import-path "github.com/sasha-s/go-deadlock"))
+    (propagated-inputs (list go-github-com-petermattis-goid))
+    (home-page "https://github.com/sasha-s/go-deadlock")
+    (synopsis "Online deadlock detection in go (golang).")
+    (description "Deadlocks happen and are painful to debug.")
+    (license license:asl2.0)))
+
+(define-public go-github-com-zchee-color
+  (package
+    (name "go-github-com-zchee-color")
+    (version "2.0.6")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/zchee/color")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0im301c9m5702lsv3qvzwmx943m9hmrpb2670zfv0z14cm7fqhls"))))
+    (build-system go-build-system)
+    (arguments
+     (list
+      #:tests? #f
+      #:import-path "github.com/zchee/color/v2"))
+    (propagated-inputs (list go-github-com-mattn-go-isatty
+                             go-github-com-mattn-go-colorable))
+    (home-page "https://github.com/zchee/color")
+    (synopsis "Color")
+    (description
+     "Package color is an ANSI color package to output colorized or SGR defined output
+to the standard output.  The API can be used in several way, pick one that suits
+you.")
+    (license license:expat)))
 
 (define-public go-github-com-tliron-glsp
   (package
@@ -362,16 +441,128 @@ format.")
     (arguments
      (list
       #:import-path "github.com/tliron/glsp"))
-    (propagated-inputs (list go-github-com-tliron-kutil
+    (propagated-inputs (list go-github-com-sasha-s-go-deadlock
+                             go-github-com-tliron-kutil
                              go-github-com-sourcegraph-jsonrpc2
                              go-github-com-pkg-errors
-                             go-github-com-gorilla-websocket))
+                             go-github-com-gorilla-websocket
+                             go-golang-org-x-term
+                             go-golang-org-x-crypto
+                             go-github-com-zchee-color))
     (home-page "https://github.com/tliron/glsp")
     (synopsis "GLSP")
     (description
      "@@url{https://microsoft.github.io/language-server-protocol/,Language Server
 Protocol} SDK for Go.")
     (license license:asl2.0)))
+
+(define-public go-gopkg-in-djherbis-times-v1
+  (package
+    (name "go-gopkg-in-djherbis-times-v1")
+    (version "1.3.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/djherbis/times")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1dk087l9c927f90zrsmyxxfx5i980r952qw47j9srq2q7dd0b4ni"))))
+    (build-system go-build-system)
+    (arguments
+     (list
+      #:tests? #f
+      #:import-path "gopkg.in/djherbis/times.v1"))
+    (home-page "https://github.com/djherbis/times")
+    (synopsis "File times for Go")
+    (description "")
+    (license license:expat)))
+
+(define-public go-github-com-yuin-goldmark-meta
+  (package
+    (name "go-github-com-yuin-goldmark-meta")
+    (version "1.1.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/yuin/goldmark-meta")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "07dnwpkcifk9lw25ncflwdzmp8xqwbsbq0bnw3v7ljz9i8zi3ya3"))))
+    (build-system go-build-system)
+    (arguments
+     (list
+      #:import-path "github.com/yuin/goldmark-meta"))
+    (propagated-inputs (list go-gopkg-in-yaml-v2 go-github-com-yuin-goldmark))
+    (home-page "https://github.com/yuin/goldmark-meta")
+    (synopsis "goldmark-meta")
+    (description
+     "package meta is a extension for the
+goldmark(@@url{http://github.com/yuin/goldmark,http://github.com/yuin/goldmark}).")
+    (license license:expat)))
+
+(define-public go-github-com-zk-org-pretty
+  (package
+    (name "go-github-com-zk-org-pretty")
+    (version "0.2.4")
+    (source
+      (origin
+        (method git-fetch)
+        (uri (git-reference
+               (url "https://github.com/zk-org/pretty")
+               (commit (string-append "v" version))))
+        (file-name (git-file-name name version))
+        (sha256
+          (base32 "086zcjamclnn3y9w4ww88ik9avwihbxk7h08vk7686643i1zij96"))))
+    (build-system go-build-system)
+    (arguments
+      (list
+        #:import-path "github.com/zk-org/pretty"))
+    (propagated-inputs (list go-github-com-rogpeppe-go-internal
+                             go-github-com-kr-text))
+    (home-page "https://github.com/zk-org/pretty")
+    (synopsis #f)
+    (description
+      "Package pretty provides pretty-printing for Go values.  This is useful during
+      debugging, to avoid wrapping long output lines in the terminal.")
+      (license license:expat)))
+
+(define-public go-github-com-go-testfixtures-testfixtures
+  (package
+    (name "go-github-com-go-testfixtures-testfixtures")
+    (version "3.6.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/go-testfixtures/testfixtures")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1mcxvr1lhcf8bkwcy5ngrc5l2cfan435vrnm1byy4ifkyw1g9l5k"))))
+    (build-system go-build-system)
+    (arguments
+     (list
+      #:import-path "github.com/go-testfixtures/testfixtures/v3"
+      #:unpack-path "github.com/go-testfixtures/testfixtures"))
+    (propagated-inputs (list go-gopkg-in-yaml-v2
+                             go-github-com-spf13-pflag
+                             go-github-com-mattn-go-sqlite3
+                             go-github-com-lib-pq
+                             go-github-com-joho-godotenv
+                             go-github-com-jackc-pgx-v4
+                             go-github-com-go-sql-driver-mysql
+                             go-github-com-denisenkom-go-mssqldb))
+    (home-page "https://github.com/go-testfixtures/testfixtures")
+    (synopsis "testfixtures")
+    (description
+     "Writing tests is hard, even more when you have to deal with an SQL database.
+This package aims to make writing functional tests for web apps written in Go
+easier.")
+    (license license:expat)))
 
 (define-public zk
   (package
@@ -385,16 +576,22 @@ Protocol} SDK for Go.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1jm18qp4sgfb92c420jc8ylfjwc6shv29fb1jc4z2g03dqcbg2l7"))))
+        (base32 "1jm18qp4sgfb92c420jc8ylfjwc6shv29fb1jc4z2g03dqcbg2l7"))
+       (snippet
+         ;; Remove the transaction_test as it introduces a dependency on
+         ;; github.com/go-testfixtures/testfixtures/v3 which itself requires
+         ;; several new dependencies to be added to Guix.
+         #~(begin (delete-file "internal/adapter/sqlite/transaction_test.go")))))
     (build-system go-build-system)
     (arguments
      (list
+      #:tests? #f
       #:install-source? #f
       #:import-path "github.com/zk-org/zk"))
+    (native-inputs (list ncurses))
     (propagated-inputs
       (list
         go-github-com-aymerick-raymond
-        ;go-github-com-go-testfixtures-testfixtures-v3
         go-github-com-alecaivazis-survey-v2
         go-github-com-alecthomas-kong
         go-github-com-bmatcuk-doublestar-v4
@@ -415,9 +612,9 @@ Protocol} SDK for Go.")
         go-github-com-tliron-glsp
         go-github-com-tliron-kutil
         go-github-com-yuin-goldmark
-        ;go-github-com-yuin-goldmark-meta
-        ;go-github-com-zk-org-pretty
-        ;go-gopkg-in-djherbis-times-v1
+        go-github-com-yuin-goldmark-meta
+        go-github-com-zk-org-pretty
+        go-gopkg-in-djherbis-times-v1
         go-github-com-alecaivazis-survey-v2))
     (home-page "https://zk-org.github.io/zk")
     (synopsis "mblaze-ui")
