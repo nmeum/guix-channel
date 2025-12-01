@@ -576,17 +576,30 @@ easier.")
        (file-name (git-file-name name version))
        (sha256
         (base32 "1jm18qp4sgfb92c420jc8ylfjwc6shv29fb1jc4z2g03dqcbg2l7"))
+       (modules '((guix build utils)))
        (snippet
-         ;; Remove the transaction_test as it introduces a dependency on
+         ;; Remove the sqlite database tests as they require a dependency on
          ;; github.com/go-testfixtures/testfixtures/v3 which itself requires
          ;; several new dependencies to be added to Guix.
-         #~(begin (delete-file "internal/adapter/sqlite/transaction_test.go")))))
+         #~(begin
+             (for-each delete-file
+               (find-files
+                 "internal/adapter/sqlite"
+                 ".*_test\\.go$"))))))
     (build-system go-build-system)
     (arguments
      (list
-      #:tests? #f
       #:install-source? #f
-      #:import-path "github.com/zk-org/zk"))
+      #:import-path "github.com/zk-org/zk"
+      #:test-flags
+      #~(list "-skip" (string-join
+                        (list
+                        ;; Tests requires an older version of go-github-com-fatih-color.
+                          "TestStyle..*"
+                        ;; Test matches $HOME against the /etc/passwd entry.
+                        ;; Doesn't work on Guix because of HOME=/homeless-shelter.
+                          "TestExpandPath")
+                        "|"))))
     (native-inputs (list ncurses))
     (propagated-inputs
       (list
