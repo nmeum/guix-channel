@@ -219,10 +219,8 @@ replaces non-ASCII characters with their ASCII approximations.")
       #:import-path "github.com/gosimple/slug"))
     (propagated-inputs (list go-github-com-gosimple-unidecode))
     (home-page "https://github.com/gosimple/slug")
-    (synopsis "slug")
-    (description
-     "Package slug generate slug from unicode string, URL-friendly slugify with
-multiple languages support.")
+    (synopsis "URL-friendly slugify with multiple language support")
+    (description "Generates slug from Unicode string for use in URLs.")
     (license license:mpl2.0)))
 
 (define-public go-github-com-mvdan-xurls
@@ -245,9 +243,9 @@ multiple languages support.")
     (propagated-inputs
       (list go-golang-org-x-net))
     (home-page "https://github.com/mvdan/xurls")
-    (synopsis "xurls")
-    (description
-     "Package xurls extracts urls from plain text using regular expressions.")
+    (synopsis "Extracts URLs from text input")
+    (description "This package can be used to extract URLs from text input
+using regular expressions.")
     (license license:bsd-3)))
 
 (define-public go-github-com-relvacode-iso8601
@@ -268,11 +266,9 @@ multiple languages support.")
      (list
       #:import-path "github.com/relvacode/iso8601"))
     (home-page "https://github.com/relvacode/iso8601")
-    (synopsis "Usage")
-    (description
-     "Package iso8601 is a utility for parsing ISO8601 datetime strings into native Go
-times.  The standard library's RFC3339 reference layout can be too strict for
-working with 3rd party APIs, especially ones written in other languages.")
+    (synopsis "Fast ISO8601 date parser for Go")
+    (description "This library parses any ISO8601 date into a native Go time
+object without utilizing regular expressions.")
     (license license:expat)))
 
 (define-public go-github-com-rvflash-elapsed
@@ -293,10 +289,9 @@ working with 3rd party APIs, especially ones written in other languages.")
      (list
       #:import-path "github.com/rvflash/elapsed"))
     (home-page "https://github.com/rvflash/elapsed")
-    (synopsis "Elapsed time")
-    (description
-     "Package elapsed return the elapsed time since a given time in a human readable
-format.")
+    (synopsis "Calculates the elapsed time for a given date")
+    (description "This package can be used to return the elapsed time since a
+given time in a human-readable format.")
     (license license:expat)))
 
 (define-public go-github-com-tj-go-naturaldate
@@ -318,8 +313,9 @@ format.")
       #:import-path "github.com/tj/go-naturaldate"))
     (propagated-inputs (list go-github-com-tj-assert))
     (home-page "https://github.com/tj/go-naturaldate")
-    (synopsis "Go Natural Date")
-    (description "Package naturaldate provides natural date time parsing.")
+    (synopsis "Provides natural date time parsing")
+    (description "This package was designed for parsing human-friendly relative
+date/time ranges.")
     (license license:expat)))
 
 (define-public go-github-com-tliron-kutil
@@ -341,8 +337,8 @@ format.")
       #:skip-build? #t
       #:tests? #f ; TODO: requires packaging a lot of additional libraries.
       #:import-path "github.com/tliron/kutil"))
-    (home-page "https://github.com/tliron/kutil")
-    (synopsis "Kutil")
+    (home-page "https://github.com/tliron/go-kutil")
+    (synopsis "Utility library for Go")
     (description "This package provides a collection of Go utilities.")
     (license license:asl2.0)))
 
@@ -387,8 +383,10 @@ format.")
       #:import-path "github.com/sasha-s/go-deadlock"))
     (propagated-inputs (list go-github-com-petermattis-goid))
     (home-page "https://github.com/sasha-s/go-deadlock")
-    (synopsis "Online deadlock detection in go (golang).")
-    (description "Deadlocks happen and are painful to debug.")
+    (synopsis "Online deadlock detection in Go")
+    (description "This package provides a drop-in replacement for the Mutex
+implementation of Go's standard library which is capable of detecting
+deadlocks.")
     (license license:asl2.0)))
 
 (define-public go-github-com-zchee-color
@@ -407,16 +405,15 @@ format.")
     (build-system go-build-system)
     (arguments
      (list
-      #:tests? #f
+      #:test-flags #~(list "-vet=off")
       #:import-path "github.com/zchee/color/v2"))
     (propagated-inputs (list go-github-com-mattn-go-isatty
                              go-github-com-mattn-go-colorable))
     (home-page "https://github.com/zchee/color")
-    (synopsis "Color")
-    (description
-     "Package color is an ANSI color package to output colorized or SGR defined output
-to the standard output.  The API can be used in several way, pick one that suits
-you.")
+    (synopsis "Color package for Go")
+    (description "Package color is an ANSI color package to output colorized or
+SGR defined output to the standard output.  The API can be used in several way,
+pick one that suits you.")
     (license license:expat)))
 
 (define-public go-github-com-tliron-glsp
@@ -445,10 +442,9 @@ you.")
                              go-golang-org-x-crypto
                              go-github-com-zchee-color))
     (home-page "https://github.com/tliron/glsp")
-    (synopsis "GLSP")
-    (description
-     "@@url{https://microsoft.github.io/language-server-protocol/,Language Server
-Protocol} SDK for Go.")
+    (synopsis "Language Server Protocol SDK for Go")
+    (description "Implementation of the @acronym{LSP, language server protocol}
+for Go, allowing the creating of custom language servers.")
     (license license:asl2.0)))
 
 (define-public go-gopkg-in-djherbis-times-v1
@@ -475,7 +471,7 @@ Protocol} SDK for Go.")
       #:import-path "gopkg.in/djherbis/times.v1"))
     (home-page "https://github.com/djherbis/times")
     (synopsis "File times for Go")
-    (description "")
+    (description "This package allows access different file time metadata from Go.")
     (license license:expat)))
 
 (define-public go-github-com-yuin-goldmark-meta
@@ -497,10 +493,9 @@ Protocol} SDK for Go.")
       #:import-path "github.com/yuin/goldmark-meta"))
     (propagated-inputs (list go-gopkg-in-yaml-v2 go-github-com-yuin-goldmark))
     (home-page "https://github.com/yuin/goldmark-meta")
-    (synopsis "goldmark-meta")
-    (description
-     "package meta is a extension for the
-goldmark(@@url{http://github.com/yuin/goldmark,http://github.com/yuin/goldmark}).")
+    (synopsis "YAML metadata extension for the goldmark markdown parser")
+    (description "Extension for the @code{goldmark} markdown parser which enables
+defining document metadata in the YAML format.")
     (license license:expat)))
 
 (define-public go-github-com-zk-org-pretty
@@ -523,45 +518,9 @@ goldmark(@@url{http://github.com/yuin/goldmark,http://github.com/yuin/goldmark})
     (propagated-inputs (list go-github-com-rogpeppe-go-internal
                              go-github-com-kr-text))
     (home-page "https://github.com/zk-org/pretty")
-    (synopsis #f)
-    (description
-      "Package pretty provides pretty-printing for Go values.  This is useful during
-      debugging, to avoid wrapping long output lines in the terminal.")
+    (synopsis "Pretty printing for Go values")
+    (description "Provides a pretty printing library for Go values.")
       (license license:expat)))
-
-(define-public go-github-com-go-testfixtures-testfixtures
-  (package
-    (name "go-github-com-go-testfixtures-testfixtures")
-    (version "3.6.1")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/go-testfixtures/testfixtures")
-             (commit (string-append "v" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "1mcxvr1lhcf8bkwcy5ngrc5l2cfan435vrnm1byy4ifkyw1g9l5k"))))
-    (build-system go-build-system)
-    (arguments
-     (list
-      #:import-path "github.com/go-testfixtures/testfixtures/v3"
-      #:unpack-path "github.com/go-testfixtures/testfixtures"))
-    (propagated-inputs (list go-gopkg-in-yaml-v2
-                             go-github-com-spf13-pflag
-                             go-github-com-mattn-go-sqlite3
-                             go-github-com-lib-pq
-                             go-github-com-joho-godotenv
-                             go-github-com-jackc-pgx-v4
-                             go-github-com-go-sql-driver-mysql
-                             go-github-com-denisenkom-go-mssqldb))
-    (home-page "https://github.com/go-testfixtures/testfixtures")
-    (synopsis "testfixtures")
-    (description
-     "Writing tests is hard, even more when you have to deal with an SQL database.
-This package aims to make writing functional tests for web apps written in Go
-easier.")
-    (license license:expat)))
 
 (define-public zk
   (package
@@ -587,20 +546,22 @@ easier.")
                  "internal/adapter/sqlite"
                  ".*_test\\.go$"))))))
     (build-system go-build-system)
+    ;; TODO: fzf
     (arguments
      (list
       #:install-source? #f
       #:import-path "github.com/zk-org/zk"
       #:test-flags
-      #~(list "-skip" (string-join
-                        (list
-                        ;; Tests requires an older version of go-github-com-fatih-color.
-                          "TestStyle..*"
-                        ;; Test matches $HOME against the /etc/passwd entry.
-                        ;; Doesn't work on Guix because of HOME=/homeless-shelter.
-                          "TestExpandPath")
-                        "|"))))
-    (native-inputs (list ncurses))
+      #~(list "-vet=off"
+              "-skip"
+              (string-join
+                (list
+                  ;; Tests requires an older version of go-github-com-fatih-color.
+                  "TestStyle..*"
+                  ;; Test matches $HOME against the /etc/passwd entry.
+                  ;; Doesn't work on Guix because of HOME=/homeless-shelter.
+                  "TestExpandPath")
+                "|"))))
     (propagated-inputs
       (list
         go-github-com-aymerick-raymond
