@@ -14,7 +14,6 @@
   #:use-module (gnu packages shells)
   #:use-module (gnu packages sqlite)
   #:use-module (gnu packages version-control)
-  #:use-module (gnu packages web)
   #:use-module (srfi srfi-26))
 
 ;; TODO: This cannot be properly used with Guix right now because
@@ -204,13 +203,3 @@ storage locations.  The most popular purpose is to synchronize a CalDAV or
 CardDAV server with a local folder or file.")
     (home-page "https://pimsync.whynothugo.nl/")
     (license license:eupl1.2)))
-
-;; See https://codeberg.org/guix/guix/pulls/4575
-(define-public nginx-webdav
-  (package
-    (inherit nginx)
-    (name "nginx-webdav")
-    (arguments
-      (substitute-keyword-arguments (package-arguments nginx)
-        ((#:configure-flags flags)
-         #~(cons "--with-http_dav_module" #$flags))))))
