@@ -9,7 +9,6 @@
   #:use-module (gnu packages gnupg)
   #:use-module (gnu packages golang-xyz)
   #:use-module (gnu packages mail)
-  #:use-module (gnu packages man)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages shells)
@@ -215,50 +214,3 @@ CardDAV server with a local folder or file.")
       (substitute-keyword-arguments (package-arguments nginx)
         ((#:configure-flags flags)
          #~(cons "--with-http_dav_module" #$flags))))))
-
-(define-public sogogi
-  (let ((commit "afabb59eb615853a271c2af8cca03b60a6ca850e")
-        (revision "0"))
-    (package
-      (name "sogogi")
-      (version (git-version "20250214" revision commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://codeberg.org/emersion/sogogi.git")
-               (commit commit)))
-         (file-name (git-file-name name version))
-         (sha256
-          (base32 "09pi493xz1nkjd1n05nh09whv1shy0mxxy9p56fjh6r87l5b8dnj"))
-         (modules '((guix build utils)))
-         ;; Fix import path for itself in the example code (build by 'check).
-         (snippet '(substitute* "config.go"
-                     (("git.sr.ht/~emersion/go-scfg")
-                       "codeberg.org/emersion/go-scfg")))))
-      (build-system go-build-system)
-      (arguments
-        (list
-          #:install-source? #f
-          #:import-path "codeberg.org/emersion/sogogi"
-          #:phases
-          #~(modify-phases %standard-phases
-              (add-after 'install 'install-man-page
-                (lambda* (#:key import-path #:allow-other-keys)
-                  (let ((man (string-append #$output "/share/man/man")))
-                    (with-input-from-file (string-append "src/" import-path
-                                                         "/doc/sogogi.1.scd")
-                      (lambda _
-                        (mkdir-p (string-append man "1"))
-                        (with-output-to-file (string-append man "1/sogogi.1")
-                          (lambda _
-                            (invoke "scdoc")))))))))))
-      (native-inputs (list go-github-com-emersion-go-webdav
-                           go-codeberg-org-emersion-go-scfg
-                           scdoc))
-      (home-page "https://codeberg.org/emersion/sogogi")
-      (synopsis "Simple WebDav server")
-      (description
-        "This package provides a simple WebDAV file server.  The server exposes
-a configured local filesystem to remote users via HTTP.")
-      (license license:agpl3))))
