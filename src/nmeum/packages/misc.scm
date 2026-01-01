@@ -203,3 +203,17 @@ storage locations.  The most popular purpose is to synchronize a CalDAV or
 CardDAV server with a local folder or file.")
     (home-page "https://pimsync.whynothugo.nl/")
     (license license:eupl1.2)))
+
+(define-public go-webdav
+  (package/inherit go-github-com-emersion-go-webdav
+    (name "go-webdav")
+    (arguments
+      (substitute-keyword-arguments
+        (package-arguments go-github-com-emersion-go-webdav)
+        ((#:tests? _ #t) #f)
+        ((#:install-source? _ #t) #f)
+        ((#:import-path _ "github.com/emersion/go-webdav") "github.com/emersion/go-webdav/cmd/webdav-server")
+        ((#:unpack-path _ "") "github.com/emersion/go-webdav")))
+    (native-inputs (package-propagated-inputs go-github-com-emersion-go-webdav))
+    (propagated-inputs '())
+    (inputs '())))
