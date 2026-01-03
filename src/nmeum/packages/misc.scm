@@ -63,9 +63,9 @@ from xkeyboard-config, layer 4 actually works.")
      (list
       #:install-source? #f
       #:import-path "github.com/nmeum/mblaze-ui"))
-    (propagated-inputs (list mblaze
-                             go-github-com-mattn-go-runewidth
-                             go-github-com-gdamore-tcell-v2))
+    (native-inputs (list mblaze
+                         go-github-com-mattn-go-runewidth
+                         go-github-com-gdamore-tcell-v2))
     (home-page "https://github.com/nmeum/mblaze-ui")
     (synopsis "mblaze-ui")
     (description "")
