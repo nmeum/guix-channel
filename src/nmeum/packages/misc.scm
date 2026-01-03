@@ -6,6 +6,7 @@
   #:use-module (guix build-system go)
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (gnu packages bash)
   #:use-module (gnu packages gnupg)
   #:use-module (gnu packages golang-xyz)
   #:use-module (gnu packages mail)
@@ -217,3 +218,35 @@ CardDAV server with a local folder or file.")
     (native-inputs (package-propagated-inputs go-github-com-emersion-go-webdav))
     (propagated-inputs '())
     (inputs '())))
+
+(define-public archive-mail
+  (package
+    (name "archive-mail")
+    (version "v0.0.0-20260103100740-0b0c03251191")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://git.8pit.net/archive-mail.git")
+             (commit (go-version->git-ref version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1fdwf2xyy8gkvagq6ivsd0kvfxx9xl3fvd81v54agwmlszxa8jc6"))))
+    (build-system go-build-system)
+    (arguments
+     (list
+      #:install-source? #f
+      #:import-path "github.com/nmeum/archive-mail"
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'check
+            (lambda* (#:key tests? import-path #:allow-other-keys)
+              (when tests?
+                (with-directory-excursion (string-append "src/" import-path "/tests")
+                   (setenv "ARCHIVE_MAIL" (in-vicinity (getenv "GOBIN") "archive-mail"))
+                   (invoke "./run_tests.sh"))))))))
+    (inputs (list bash-minimal))
+    (home-page "https://git.8pit.net/archive-logs")
+    (synopsis "archive-mail")
+    (description "")
+    (license license:gpl3+)))
