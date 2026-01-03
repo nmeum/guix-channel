@@ -250,3 +250,37 @@ CardDAV server with a local folder or file.")
     (synopsis "archive-mail")
     (description "")
     (license license:gpl3+)))
+
+(define-public archive-logs
+  (let ((commit "faaf2e85ee419c7b0a3c4dd0f5932834d2fb9d60")
+        (revision "0"))
+    (package
+      (name "archive-logs")
+      (version (git-version "20211124" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://git.8pit.net/archive-logs.git")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "0d9fxbrajzjnb6cvaw8x363583gvdplw0yfbk7qgzzrsyfdqa52d"))))
+      (build-system gnu-build-system)
+      (arguments
+       (list
+        #:test-target "check"
+        #:make-flags
+        #~(list "CFLAGS=-O2"
+                "HAVE_SENDFILE=1"
+                "PREFIX=/"
+                (string-append "DESTDIR=" #$output)
+                (string-append "CC=" #$(cc-for-target)))
+        #:phases
+        #~(modify-phases %standard-phases
+            (delete 'configure))))
+      (inputs (list bash-minimal))
+      (home-page "https://git.8pit.net/archive-logs")
+      (synopsis "Iteratively archive newline separated log files")
+      (description "")
+      (license license:gpl3))))
