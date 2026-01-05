@@ -6,6 +6,7 @@
   #:use-module (guix build-system go)
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages gnupg)
   #:use-module (gnu packages golang-xyz)
