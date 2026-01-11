@@ -210,7 +210,7 @@ which do not set @code{XDG_RUNTIME_DIR}.")
         #~(modify-phases %standard-phases
             (replace 'configure
               (lambda _
-                (symlink #$(get-file "ustatus-config.h") "config.h")))
+                (symlink #$(nmeum-file "ustatus-config.h") "config.h")))
             (replace 'install
               (lambda* (#:key outputs #:allow-other-keys)
                 (let* ((outdir (assoc-ref outputs "out"))

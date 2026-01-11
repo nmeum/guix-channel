@@ -1,4 +1,5 @@
 (define-module (nmeum packages misc)
+  #:use-module (nmeum packages)
   #:use-module (guix)
   #:use-module (guix build-system cargo)
   #:use-module (guix build-system copy)
@@ -117,12 +118,9 @@ from xkeyboard-config, layer 4 actually works.")
     (source
      (origin
        (inherit (package-source loksh))
-       (patches (map (lambda (patch)
-                       (search-path (map (cut string-append <>
-                                              "/nmeum/packages/patches")
-                                         %load-path) patch))
-                     '("loksh-bracketed-paste-mode.patch"
-                       "loksh-kshbasename.patch")))))))
+       (patches (nmeum-patches
+                  "loksh-bracketed-paste-mode.patch"
+                  "loksh-kshbasename.patch"))))))
 
 (define-public tpm
   (package

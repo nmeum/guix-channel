@@ -1,7 +1,10 @@
 (define-module (nmeum packages)
   #:use-module (guix packages)
+  #:use-module (guix diagnostics)
   #:use-module (guix gexp)
-  #:use-module (ice-9 match))
+  #:use-module (ice-9 match)
+  #:export (nmeum-patches
+            nmeum-file))
 
 (define %distro-root-directory
   ;; Like %distro-root-directory from (gnu packages), with adjusted paths.
@@ -26,8 +29,23 @@
   ;; Default search path for package modules.
   `((,%distro-root-directory . "nmeum/packages")))
 
-(define-public (get-file name)
+(define-public (nmeum-file name)
   (local-file
     (in-vicinity
       %distro-root-directory
       (string-append "nmeum/packages/files/" name))))
+
+;; From nonguix.
+(define (search-patch file-name)
+  (define %patch-path
+    (make-parameter
+      (list
+        (in-vicinity
+          %distro-root-directory
+          "nmeum/packages/patches"))))
+
+  (search-path (%patch-path) file-name))
+
+;; From nonguix.
+(define-syntax-rule (nmeum-patches file-name ...)
+  (list (search-patch file-name) ...))
