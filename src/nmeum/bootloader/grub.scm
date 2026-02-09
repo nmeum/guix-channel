@@ -7,8 +7,8 @@
   #:use-module ((srfi srfi-1) #:select (break))
   #:use-module ((srfi srfi-11) #:select (let-values)))
 
-;; wraps an existing Grub 'bootloader-installer' in a procedure which copies
-;; all files referenced in Grub's configuration file to the install directory.
+;; wraps an existing GRUB 'bootloader-installer' in a procedure which copies
+;; all files referenced in GRUB's configuration file to the install directory.
 ;;
 ;; TODO: make use of the new in-vicinity procedure (unreleased in GNU Guile).
 ;; See https://cgit.git.savannah.gnu.org/cgit/guile.git/commit/?id=755f703dcb3110e1920e42078edc6d9c88cc8b28
@@ -19,11 +19,11 @@
                    ((guix store) #:select (direct-store-path))
                    (ice-9 regex))
 
-      ;; regex for finding a path to the Store in the Grub configuration file.
-      ;; Obviously a heurstic, ideally we would get this information from Grub.
+      ;; regex for finding a path to the Store in the GRUB configuration file.
+      ;; Obviously a heurstic, ideally we would get this information from GRUB.
       (define store-regexp (make-regexp "/gnu/store/[A-Za-z0-9@/._-]+"))
 
-      ;; regex for finding the linux command in a Grub configuration file.
+      ;; regex for finding the linux command in a GRUB configuration file.
       ;; See https://www.gnu.org/software/grub/manual/grub/grub.html#linux
       (define linux-regexp (make-regexp "^[[:space:]]*linux[[:space:]]"))
 
