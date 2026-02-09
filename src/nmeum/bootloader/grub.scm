@@ -60,7 +60,7 @@
              (grub-lines (call-with-input-file grub-cfg read-lines))
              (required (required-paths grub-lines))
              (existing (existing-paths (string-append install-dir "/gnu/store"))))
-        (for-each ; remove leftovers from old generations
+        (for-each ; remove leftovers from deleted generations
           (lambda (store-entry)
             (delete-file-recursively
               (string-append install-dir "/gnu/store/" store-entry)))
