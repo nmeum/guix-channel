@@ -136,38 +136,3 @@
                                            sogogi-shepherd-service)))
                 (compose concatenate)
                 (default-value (sogogi-configuration))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define (go-webdav-shepherd-service args)
-  (list (shepherd-service
-          (documentation "go-webdav daemon.")
-          (provision '(go-webdav))
-          ;; go-webdav may be bound to a particular IP address, hence
-          ;; only start it after the networking service has started.
-          (requirement '(user-processes networking))
-          (start #~(make-forkexec-constructor
-                     (list (string-append #$go-webdav "/bin/webdav-server")
-                           #$@args)))
-          (stop #~(make-kill-destructor)))))
-
-(define go-webdav-account-service
-  (list (user-group (name "go-webdav") (system? #t))
-        (user-account
-         (name "go-webdav")
-         (group "go-webdav")
-         (system? #t)
-         (comment "go-webdav daemon user")
-         (home-directory "/var/empty")
-         (shell (file-append shadow "/sbin/nologin")))))
-
-(define-public go-webdav-service-type
-  (service-type (name 'go-webdav)
-                (description "Run the go-webdav WebDAV server.")
-                (extensions
-                  (list (service-extension account-service-type
-                                           (const go-webdav-account-service))
-                        (service-extension shepherd-root-service-type
-                                           go-webdav-shepherd-service)))
-                (compose concatenate)
-                (default-value '("-addr" "127.0.0.1:8080"))))
