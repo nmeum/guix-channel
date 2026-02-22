@@ -16,6 +16,7 @@
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages shells)
   #:use-module (gnu packages sqlite)
+  #:use-module (gnu packages tree-sitter)
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages vim)
   #:use-module (srfi srfi-26))
@@ -131,8 +132,17 @@ from xkeyboard-config, layer 4 actually works.")
     (source
      (origin
        (inherit (package-source neovim))
-       (patches (nmeum-patches
-                  "neovim-tree-sitter-grammar-path.patch"))))))
+       (patches (nmeum-patches "neovim-tree-sitter-grammar-path.patch"))))
+    (propagated-inputs
+     ;; bundled tree-sitters, neovim assumes that these are available.
+     ;; See https://neovim.io/doc/user/treesitter.html#treesitter-parsers
+     (list tree-sitter-c tree-sitter-lua tree-sitter-markdown
+           ;; TODO: tree-sitter-vimscript
+           tree-sitter-vimdoc))
+    (native-search-paths
+     (list (search-path-specification
+            (variable "TREE_SITTER_GRAMMAR_PATH")
+            (files '("lib/tree-sitter")))))))
 
 (define-public tpm
   (package
