@@ -164,7 +164,7 @@ latter is a lot more minimal.")
 (define-public pimsync
   (package
     (name "pimsync")
-    (version "0.5.2")
+    (version "0.5.6")
     (source
       (origin
         (method git-fetch)
@@ -173,20 +173,12 @@ latter is a lot more minimal.")
                (commit (string-append "v" version))))
         (file-name (git-file-name name version))
         (sha256
-          (base32 "0r8ph1gra5d9wb06c8khcz0rpjak2dcpvkvdm7aj55gdvcnx4v9d"))))
+          (base32 "01qxg0mk7if96rmb0q88wgjpnv1fb8iw2dbzwlm0ars1mi3xpmr3"))))
     (build-system cargo-build-system)
     (arguments
       (list #:install-source? #f
             #:phases
             #~(modify-phases %standard-phases
-                ;; XXX: Forcefully disable experimental jmap support as it
-                ;; introduces a dependency on jmap-tools which does not compile
-                ;; with rustc-1.85.1 due to utilization of unstable rustc
-                ;; features.  Can be removed once we upgrade to rustc-1.86.X.
-                (add-after 'unpack 'disable-jmap
-                  (lambda _
-                    (substitute* "Cargo.toml"
-                      ((".*jmap.*") ""))))
                 (add-after 'unpack 'setup-environment
                   (lambda _
                     (setenv "PIMSYNC_VERSION" #$version)))
