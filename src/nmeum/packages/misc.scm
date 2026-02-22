@@ -17,6 +17,7 @@
   #:use-module (gnu packages shells)
   #:use-module (gnu packages sqlite)
   #:use-module (gnu packages version-control)
+  #:use-module (gnu packages vim)
   #:use-module (srfi srfi-26))
 
 ;; TODO: This cannot be properly used with Guix right now because
@@ -121,6 +122,17 @@ from xkeyboard-config, layer 4 actually works.")
        (patches (nmeum-patches
                   "loksh-bracketed-paste-mode.patch"
                   "loksh-kshbasename.patch"))))))
+
+;; XXX: https://codeberg.org/guix/guix/pulls/6295
+(define-public neovim-8pit
+  (package
+    (inherit neovim)
+    (name "neovim-8pit")
+    (source
+     (origin
+       (inherit (package-source neovim))
+       (patches (nmeum-patches
+                  "neovim-tree-sitter-grammar-path.patch"))))))
 
 (define-public tpm
   (package
