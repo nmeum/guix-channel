@@ -16,7 +16,6 @@
   #:use-module (gnu packages shells)
   #:use-module (gnu packages tree-sitter)
   #:use-module (gnu packages version-control)
-  #:use-module (gnu packages vim)
   #:use-module (srfi srfi-26))
 
 ;; TODO: This cannot be properly used with Guix right now because
@@ -121,26 +120,6 @@ from xkeyboard-config, layer 4 actually works.")
        (patches (nmeum-patches
                   "loksh-bracketed-paste-mode.patch"
                   "loksh-kshbasename.patch"))))))
-
-;; XXX: https://codeberg.org/guix/guix/pulls/6295
-(define-public neovim-8pit
-  (package
-    (inherit neovim)
-    (name "neovim-8pit")
-    (source
-     (origin
-       (inherit (package-source neovim))
-       (patches (nmeum-patches "neovim-tree-sitter-grammar-path.patch"))))
-    (propagated-inputs
-     ;; bundled tree-sitters, neovim assumes that these are available.
-     ;; See https://neovim.io/doc/user/treesitter.html#treesitter-parsers
-     (list tree-sitter-c tree-sitter-lua tree-sitter-markdown
-           ;; TODO: tree-sitter-vimscript
-           tree-sitter-vimdoc))
-    (native-search-paths
-     (list (search-path-specification
-            (variable "TREE_SITTER_GRAMMAR_PATH")
-            (files '("lib/tree-sitter")))))))
 
 (define-public tpm
   (package
