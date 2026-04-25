@@ -73,6 +73,31 @@ from xkeyboard-config, layer 4 actually works.")
     (description "")
     (license license:gpl3+)))
 
+(define-public webdav-server
+  (package
+    (name "webdav-server")
+    (version "v0.0.0-20260424104841-60ba47890791")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://git.8pit.net/webdav-server.git")
+             (commit (go-version->git-ref version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1jp5k9y20lz9n0vwhaw5ivpqdqkam81lxdqb2gc9xx0k2jih6wpk"))))
+    (build-system go-build-system)
+    (arguments
+     (list
+      #:tests? #f
+      #:install-source? #f
+      #:import-path "git.8pit.net/webdav-server"))
+    (native-inputs (list go-github-com-emersion-go-webdav))
+    (home-page "https://git.8pit.net/webdav-server")
+    (synopsis "Extremely simplistic WebDAV server built around go-webdav")
+    (description "")
+    (license license:expat)))
+
 (define-public git-shuffle
   (let ((commit "06ac27513a275c979aa57cd8c932b90c8cb689eb")
         (revision "1"))
