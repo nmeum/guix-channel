@@ -2,11 +2,15 @@
   #:use-module (nmeum packages misc)
   #:use-module (guix gexp)
   #:use-module (gnu packages admin)
+  #:use-module (gnu packages dav)
   #:use-module (gnu services)
   #:use-module (gnu services base)
+  #:use-module (gnu services mail)
   #:use-module (gnu services shepherd)
+  #:use-module (gnu services web)
   #:use-module (gnu system accounts)
   #:use-module (gnu system shadow)
+  #:use-module (gnu system file-systems)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26))
 
@@ -43,3 +47,54 @@
                                            webdav-server-shepherd-service)))
                 (compose concatenate)
                 (default-value '())))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; XXX: This is hopefully a temporary hack until we come up with a better way
+;; of using gunicorn-service-type with existing WSGI application services.
+;;
+;; See <https://codeberg.org/guix/guix/issues/8185>
+
+(define serialize-radicale-configuration
+  (@@ (gnu services mail) serialize-radicale-configuration))
+
+(define radicale-accounts
+  (@@ (gnu services mail) %radicale-accounts))
+
+(define radicale-activation
+  (@@ (gnu services mail) radicale-activation))
+
+(define-public radicale-gunicorn-service-type
+  (service-type
+   (name 'radicale-gunicorn)
+   (description "Run Radicale via the gunicorn WSGI server.")
+   (extensions
+    (list (service-extension
+            gunicorn-service-type
+            (lambda (conf)
+              (list (gunicorn-app
+                      (name "radicale")
+                      (package radicale)
+                      (wsgi-app-module "radicale")
+                      (sockets '("unix:/var/run/radicale/socket"))
+                      (socket-group "nginx")
+                      (user "radicale")
+                      (group "radicale")
+                      (environment-variables
+                        '(("RADICALE_CONFIG" . "/etc/radicale.conf")))
+                      ;; XXX: Don't create a control-socket otherwise gunicorn will
+                      ;; try to create it in ~ which isn't writable in the container.
+                      (extra-cli-arguments '("--no-control-socket"))
+                      (mappings
+                        (let ((cfg (serialize-radicale-configuration conf)))
+                          (list
+                            (file-system-mapping
+                              (source cfg)
+                              (target "/etc/radicale.conf"))
+                            (file-system-mapping
+                              (source "/var/lib/radicale")
+                              (target "/var/lib/radicale")
+                              (writable? #t)))))))))
+          (service-extension account-service-type (const radicale-accounts))
+          (service-extension activation-service-type radicale-activation)))
+   (default-value (radicale-configuration))))
