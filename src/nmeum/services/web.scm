@@ -5,6 +5,7 @@
   #:use-module (gnu packages dav)
   #:use-module (gnu services)
   #:use-module (gnu services base)
+  #:use-module (gnu services configuration)
   #:use-module (gnu services mail)
   #:use-module (gnu services shepherd)
   #:use-module (gnu services web)
@@ -64,6 +65,12 @@
 (define radicale-activation
   (@@ (gnu services mail) radicale-activation))
 
+(define radicale-configuration-auth
+  (@@ (gnu services mail) radicale-configuration-auth))
+
+(define radicale-auth-configuration-htpasswd-filename
+  (@@ (gnu services mail) radicale-auth-configuration-htpasswd-filename))
+
 (define-public radicale-gunicorn-service-type
   (service-type
    (name 'radicale-gunicorn)
@@ -86,15 +93,23 @@
                       ;; try to create it in ~ which isn't writable in the container.
                       (extra-cli-arguments '("--no-control-socket"))
                       (mappings
-                        (let ((cfg (serialize-radicale-configuration conf)))
-                          (list
+                        (let ((cfg (serialize-radicale-configuration conf))
+                              (auth (radicale-configuration-auth conf)))
+                          (cons*
                             (file-system-mapping
                               (source cfg)
                               (target "/etc/radicale.conf"))
                             (file-system-mapping
                               (source "/var/lib/radicale")
                               (target "/var/lib/radicale")
-                              (writable? #t)))))))))
+                              (writable? #t))
+                            (if (maybe-value-set? auth)
+                              (let ((htpasswd (radicale-auth-configuration-htpasswd-filename auth)))
+                                (list
+                                  (file-system-mapping
+                                    (source htpasswd)
+                                    (target htpasswd))))
+                              '()))))))))
           (service-extension account-service-type (const radicale-accounts))
           (service-extension activation-service-type radicale-activation)))
    (default-value (radicale-configuration))))
