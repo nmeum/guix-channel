@@ -8,6 +8,7 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
+  #:use-module ((gnu packages c) #:select (simple-cc))
   #:use-module (gnu packages gnupg)
   #:use-module (gnu packages golang-xyz)
   #:use-module (gnu packages mail)
@@ -250,3 +251,13 @@ latter is a lot more minimal.")
       (synopsis "Iteratively archive newline separated log files")
       (description "")
       (license license:gpl3))))
+
+(define-public simple-cc-8pit
+  (package
+    (inherit simple-cc)
+    (name "simple-cc-8pit")
+    (source
+     (origin
+       (inherit (package-source simple-cc))
+       (patches (append (origin-patches (package-source simple-cc))
+                        (nmeum-patches "simple-cc-qbe-func-return-type.patch")))))))
