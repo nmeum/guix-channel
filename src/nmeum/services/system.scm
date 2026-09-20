@@ -1,11 +1,16 @@
 (define-module (nmeum services system)
+  #:use-module (srfi srfi-1)
+  #:use-module (gnu packages linux)
+  #:use-module (gnu services audio)
+  #:use-module (gnu services shepherd)
   #:use-module (nmeum packages desktop)
   #:use-module (guix gexp)
   #:use-module (gnu services)
   #:use-module (gnu services base)
   #:use-module (gnu system pam)
 
-  #:export (login-xdg-runtime-service-type))
+  #:export (login-xdg-runtime-service-type
+            alsa-restore-service-type))
 
 ;; Hack to extract the login-pam-service from (gnu services base).
 (define login-pam-service (@@ (gnu services base) login-pam-service))
@@ -55,3 +60,47 @@
                 (default-value (login-configuration))
                 (description
                  "Custom login service integrated with dumb-runtime-dir.")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define %alsa-restore-activation
+  #~(begin
+      (use-modules (guix build utils))
+      (mkdir-p "/var/lib/alsa")))
+
+(define (alsa-restore-shepherd-service config)
+  (list (shepherd-service
+          (provision '(alsa-restore))
+          (documentation "Store and restore ALSA volume level.")
+          ;; Ideally, we would declare this services to be one-shot as it
+          ;; doesn't start a long-running daemon.  Unfortunately, the stop
+          ;; action cannot be triggered for one-shot services, thus it is
+          ;; unsuitable here and we just prevent respawning of the service.
+          (respawn? #f)
+          (start #~(lambda _
+                     ;; Will exit with a non-zero exit status, if `store` has
+                     ;; never been invoked before. Therefore, we cannot use
+                     ;; the `invoke` procedure here.
+                     (system*
+                       #$(file-append alsa-utils "/sbin/alsactl")
+                       "restore")
+                     #t))
+          (stop #~(lambda _
+                    (invoke
+                      #$(file-append alsa-utils "/sbin/alsactl")
+                      "store"))))))
+
+(define alsa-restore-service-type
+  (service-type
+    (name 'alsa-restore)
+    (extensions
+      (list (service-extension shepherd-root-service-type
+                               alsa-restore-shepherd-service)
+            (service-extension activation-service-type
+                               (const %alsa-restore-activation))))
+    (description
+      "One-shot service which stores and restores the ALSA volume
+level using the @command{alsactl} command.")
+    (default-value '())
+    (compose concatenate)
+    (extend append)))
