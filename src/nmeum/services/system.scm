@@ -68,27 +68,27 @@
       (use-modules (guix build utils))
       (mkdir-p "/var/lib/alsa")))
 
-(define (alsa-restore-shepherd-service config)
+(define (alsa-restore-shepherd-service alsactl-args)
   (list (shepherd-service
           (provision '(alsa-restore))
-          (documentation "Store and restore ALSA volume level.")
+          (requirement '(user-processes))
+          (documentation "Store and restore ALSA volume levels.")
           ;; Ideally, we would declare this services to be one-shot as it
           ;; doesn't start a long-running daemon.  Unfortunately, the stop
           ;; action cannot be triggered for one-shot services, thus it is
           ;; unsuitable here and we just prevent respawning of the service.
           (respawn? #f)
           (start #~(lambda _
-                     ;; Will exit with a non-zero exit status, if `store` has
-                     ;; never been invoked before. Therefore, we cannot use
-                     ;; the `invoke` procedure here.
-                     (system*
-                       #$(file-append alsa-utils "/sbin/alsactl")
-                       "restore")
-                     #t))
+                     (when (file-exists? "/var/lib/alsa/asound.state")
+                       (invoke
+                         #$(file-append alsa-utils "/sbin/alsactl")
+                         "restore"
+                         #$@alsactl-args))))
           (stop #~(lambda _
                     (invoke
                       #$(file-append alsa-utils "/sbin/alsactl")
-                      "store"))))))
+                      "store"
+                      #$@alsactl-args))))))
 
 (define alsa-restore-service-type
   (service-type
